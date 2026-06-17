@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MRI QC — Sphere / ACR Analyzer</title>
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+  <header id="toolbar">
+    <div class="toolbar-left">
+      <span class="app-title">MRI QC Sphere</span>
+      <span id="api-status" class="badge badge-warn">API...</span>
+      <div class="phantom-toggle">
+        <label class="toggle-label">
+          <input type="checkbox" id="phantom-type-toggle" />
+          <span class="toggle-slider"></span>
+        </label>
+        <span id="phantom-type-label" class="toggle-text">Sfera</span>
+      </div>
+    </div>
+    <nav class="toolbar-center" id="step-indicator">
+      <button class="step-btn active" data-step="1"><span class="step-num">1</span> Carica</button>
+      <span class="step-sep">›</span>
+      <button class="step-btn" data-step="2"><span class="step-num">2</span> Slice</button>
+      <span class="step-sep">›</span>
+      <button class="step-btn" data-step="3"><span class="step-num">3</span> Info</button>
+      <span class="step-sep">›</span>
+      <button class="step-btn" data-step="4"><span class="step-num">4</span> Analisi</button>
+      <span class="step-sep">›</span>
+      <button class="step-btn" data-step="5"><span class="step-num">5</span> Report</button>
+    </nav>
+    <div class="toolbar-right">
+      <a href="guida.html" class="btn btn-xs btn-secondary" style="text-decoration:none" title="Guida operativa">📖 Guida</a>
+      <button id="btn-theme-toggle" class="btn btn-xs">☀</button>
+    </div>
+  </header>
+
+  <main id="main-content">
+    <!-- STEP 1: Load -->
+    <section id="step-1" class="step-panel active">
+      <div class="welcome-card">
+        <h1>MRI QC — Sphere / ACR</h1>
+        <p class="subtitle">Controllo Qualità MRI con Phantom Sferico o ACR</p>
+        <p class="subtitle small">Geometria • PIU • PSG • SNR • SNRU • T2</p>
+        <div class="form-grid">
+          <label>Cartella DICOM</label>
+          <div class="input-row">
+            <input type="text" id="input-dir" placeholder="Percorso cartella DICOM MRI" />
+            <button id="btn-browse" class="btn btn-secondary btn-xs">📁</button>
+          </div>
+        </div>
+        <button id="btn-load" class="btn btn-primary btn-large" disabled>Carica</button>
+        <p style="margin-top:12px"><a href="guida.html" style="color:var(--accent-cyan);font-size:11px;text-decoration:none">📖 Guida operativa con formule e riferimenti</a></p>
+        <div id="load-progress" class="progress-area hidden">
+          <div class="spinner"></div>
+          <span id="load-msg">Caricamento...</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- STEP 2: Slice Selection -->
+    <section id="step-2" class="step-panel">
+      <div class="panel-header">
+        <h2>Seleziona Slice</h2>
+        <div class="panel-actions">
+          <span id="series-info" class="badge badge-blue" style="font-size:11px"></span>
+          <button id="btn-change-series" class="btn btn-xs btn-secondary">Cambia Serie</button>
+          <button id="btn-confirm-slice" class="btn btn-primary btn-xs" disabled>Conferma →</button>
+        </div>
+      </div>
+      <div class="controls-bar">
+        <div class="wlww-controls">
+          <label>WL<input type="number" id="wl-val" value="0" step="50"/></label>
+          <label>WW<input type="number" id="ww-val" value="0" step="100"/></label>
+          <button class="btn btn-xs" id="btn-wl-auto">Auto</button>
+          <button id="btn-refresh-thumbs" class="btn btn-xs">↻</button>
+        </div>
+        <div class="grid-size-btns">
+          <button class="btn btn-xs size-btn" data-size="S">S</button>
+          <button class="btn btn-xs size-btn active" data-size="M">M</button>
+          <button class="btn btn-xs size-btn" data-size="L">L</button>
+          <button class="btn btn-xs size-btn" data-size="XL">XL</button>
+        </div>
+      </div>
+      <p class="hint">Click = seleziona analisi | Shift+Click = seleziona per T2</p>
+      <div id="slice-grid" class="slice-grid"></div>
+      <div id="t2-selection" class="t2-bar hidden">
+        <span>T2 → TE1: <b id="t2-te1-info">—</b> | TE2: <b id="t2-te2-info">—</b></span>
+      </div>
+    </section>
+
+    <!-- STEP 3: Info QC -->
+    <section id="step-3" class="step-panel">
+      <div class="panel-header">
+        <h2>Informazioni Controllo</h2>
+        <button id="btn-start-analysis" class="btn btn-primary btn-xs">Analisi →</button>
+      </div>
+      <div class="info-form">
+        <div class="form-grid two-col">
+          <label>Data</label><input type="date" id="info-date" />
+          <label>Tipo</label>
+          <select id="info-type"><option>Costanza</option><option>Annuale</option><option>Accettazione</option></select>
+          <label>Presidio</label><input type="text" id="info-presidio" placeholder="Ospedale..." />
+          <label>Sala</label><input type="text" id="info-sala" placeholder="RM1" />
+          <label>Operatori</label><input type="text" id="info-operatori" />
+          <label>Note</label><textarea id="info-note" rows="2"></textarea>
+        </div>
+        <div id="dicom-meta-card" class="meta-card"></div>
+      </div>
+    </section>
+
+    <!-- STEP 4: Analysis -->
+    <section id="step-4" class="step-panel">
+      <div class="panel-header">
+        <h2>Analisi</h2>
+        <div class="panel-actions">
+          <button id="btn-analyze-all" class="btn btn-xs btn-primary">▶ Tutti</button>
+          <button id="btn-go-report" class="btn btn-xs btn-secondary">Report →</button>
+        </div>
+      </div>
+      <div id="module-tabs" class="tab-bar"></div>
+      <div id="module-content" class="module-content"></div>
+    </section>
+
+    <!-- STEP 5: Report & Trend -->
+    <section id="step-5" class="step-panel">
+      <div class="panel-header">
+        <h2>Report & Trend</h2>
+        <div class="panel-actions">
+          <button id="btn-save-history" class="btn btn-xs btn-secondary">💾 Salva Storico</button>
+          <button id="btn-print" class="btn btn-xs btn-primary">🖨 Stampa</button>
+        </div>
+      </div>
+      <div id="report-container"></div>
+      <div id="trend-container"></div>
+    </section>
+  </main>
+
+  <footer id="status-bar">
+    <span id="status-msg">Pronto</span>
+    <span class="footer-credit">MRI QC — Sphere/ACR</span>
+  </footer>
+
+  <script src="js/api.js"></script>
+  <script src="js/state.js"></script>
+  <script src="js/ui.js"></script>
+  <script src="js/svg-chart.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>

@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Guida QC MRI — Phantom Sferico</title>
+<style>
+:root{--bg:#0f172a;--card:#1e293b;--border:#334155;--text:#e2e8f0;--dim:#94a3b8;--accent:#22d3ee;--blue:#3b82f6;--green:#22c55e;--red:#ef4444;--mono:"Consolas","Fira Code",monospace;}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:var(--bg);color:var(--text);line-height:1.7;padding:32px;max-width:900px;margin:0 auto}
+h1{color:var(--accent);font-size:1.8rem;margin-bottom:8px;border-bottom:2px solid var(--border);padding-bottom:12px}
+h2{color:var(--accent);font-size:1.2rem;margin:28px 0 10px;padding-left:12px;border-left:3px solid var(--accent)}
+h3{font-size:1rem;margin:16px 0 6px;color:var(--blue)}
+p{margin:8px 0;font-size:0.9rem}
+.subtitle{color:var(--dim);font-size:0.85rem;margin-bottom:24px}
+.card{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:16px 20px;margin:12px 0}
+.formula{background:#1a1a2e;border:1px solid #334155;border-radius:6px;padding:12px 16px;font-family:var(--mono);font-size:0.85rem;color:#fbbf24;margin:10px 0;overflow-x:auto}
+.note{border-left:3px solid var(--green);padding:8px 12px;background:rgba(34,197,94,0.05);border-radius:0 6px 6px 0;font-size:0.82rem;margin:10px 0}
+.warn{border-left:3px solid var(--red);padding:8px 12px;background:rgba(239,68,68,0.05);border-radius:0 6px 6px 0;font-size:0.82rem;margin:10px 0}
+table{width:100%;border-collapse:collapse;font-size:0.82rem;margin:10px 0}
+th{text-align:left;padding:6px 10px;background:rgba(34,211,238,0.08);color:var(--accent);border-bottom:1px solid var(--border)}
+td{padding:6px 10px;border-bottom:1px solid rgba(51,65,85,0.5)}
+code{font-family:var(--mono);background:rgba(59,130,246,0.1);padding:1px 5px;border-radius:3px;font-size:0.82rem}
+a{color:var(--blue);text-decoration:none}a:hover{text-decoration:underline}
+ol,ul{padding-left:20px;margin:6px 0}li{margin:4px 0;font-size:0.88rem}
+.ref{font-size:0.78rem;color:var(--dim);margin-top:4px}
+.back-btn{position:fixed;top:16px;right:16px;background:var(--blue);color:#fff;border:none;padding:8px 16px;border-radius:6px;font-size:0.8rem;cursor:pointer;text-decoration:none}
+@media print{body{background:#fff;color:#000;padding:12px}.card{border:1px solid #ccc;background:#f8f8f8}.formula{background:#f0f0f0;color:#333}}
+</style>
+</head>
+<body>
+<a href="index.html" class="back-btn">← App</a>
+<h1>Guida QC MRI — Phantom Sferico / ACR</h1>
+<p class="subtitle">Manuale operativo con formule, procedure e riferimenti bibliografici.<br>Versione 1.0 — Giugno 2026</p>
+
+<h2>1. Introduzione</h2>
+<div class="card">
+<p>Questo software esegue il <b>Controllo di Qualità (QC)</b> di apparecchiature RM utilizzando un <b>phantom sferico</b> (o ACR). L'analisi avviene su una singola slice assiale corrispondente alla sezione equatoriale della sfera (disco di segnale uniforme).</p>
+<p>I parametri misurati sono conformi alle linee guida <b>ACR</b> (American College of Radiology), <b>AAPM</b> (American Association of Physicists in Medicine) e alla norma <b>IEC 62464-1</b>.</p>
+</div>
+
+<h2>2. Procedura Operativa</h2>
+<ol>
+<li><b>Carica</b> — Seleziona la cartella contenente le immagini DICOM del phantom.</li>
+<li><b>Slice</b> — Seleziona la fetta assiale equatoriale (il disco più grande e uniforme).</li>
+<li><b>Info QC</b> — Compila le informazioni del controllo (data, operatore, note).</li>
+<li><b>Analisi</b> — Esegui le misure singolarmente o tutte insieme. Le ROI sono <b>trascinabili</b> per affinamento manuale.</li>
+<li><b>Report</b> — Visualizza il riepilogo e il trend temporale. Salva nello storico per il monitoraggio.</li>
+</ol>
+<div class="note">Per il calcolo del <b>T2</b>, occorrono almeno due serie acquisite con TE diversi (es. TE=20ms e TE=80ms). Il software le rileva automaticamente.</div>
+
+<h2>3. Protocollo di Acquisizione Raccomandato</h2>
+<div class="card">
+<h3>Setup phantom</h3>
+<ul>
+<li>Posizionare il phantom sferico (o ACR) al centro della bobina Head</li>
+<li>Allineare il centro del phantom con il laser isocentro</li>
+<li>Attendere almeno 15-20 minuti per l'equilibrio termico</li>
+<li>Orientamento: asse lungo del phantom parallelo a B₀ (cranio-caudale)</li>
+</ul>
+
+<h3>Sequenze richieste (minimo 3)</h3>
+<p>Esempio pratico testato su GE Optima MR450w 1.5T — protocollo "AAALLASIA ENCEFALO1":</p>
+<table>
+<tr><th>#</th><th>Sequenza 2D</th><th>TR [ms]</th><th>TE [ms]</th><th>Flip</th><th>FOV [mm]</th><th>Matrix</th><th>Number of Average</th><th>Slice [mm]</th><th>Scopo</th></tr>
+<tr><td>1</td><td><b>AX T2* GRE</b></td><td>500</td><td>15</td><td>60</td><td>270</td><td>256×160</td><td>1</td><td>5</td><td>Geometria, PIU, PSG, SNR, SNRU + T2 (TE₁)</td></tr>
+<tr><td>2</td><td><b>T1 SE</b></td><td>500</td><td>30</td><td>90</td><td>270</td><td>256×160</td><td>1</td><td>5</td><td>T2 (TE₂ — lungo)</td></tr>
+<tr><td>3</td><td><b>T1 SE</b></td><td>500</td><td>100</td><td>90</td><td>270</td><td>256×160</td><td>1</td><td>5</td><td>T2 (TE intermedio, opzionale)</td></tr>
+</table>
+
+<h3>Parametri chiave</h3>
+<ul>
+<li><b>FOV</b>: sufficientemente grande da includere tutto il phantom + margine per ROI background (≥250 mm)</li>
+<li><b>Matrice ricostruita</b>: 256×256 (pixel spacing ~1 mm)</li>
+<li><b>Slice</b>: singola assiale passante per il centro del phantom (diametro massimo) o pacchetto minimo configurabile</li>
+<li><b>NEX/NSA</b>: 1 (per valutazione SNR reale; se > 1, il SNR misurato va diviso per √NEX)</li>
+<li><b>Bandwidth</b>: mantenere costante tra sessioni di QC</li>
+<li><b>Nessun filtro immagine</b>: disattivare filtri di post-processing (smooth, edge enhancement)</li>
+<li>Per individuare malfunzionamenti dei Gradienti nelle tre direzioni si racocmanda di acquisire a settimane alterne nei tre piani Axial/Sag/Cor </li>
+</ul>
+
+<h3>Per il calcolo del T2</h3>
+<ul>
+<li>Servono almeno <b>2 serie con stesso TR e TE diversi</b></li>
+<li>Idealmente: TE₁ corto (15-20 ms) e TE₂ lungo (80-100 ms)</li>
+<li>Stessa slice, stesso FOV, stessa matrix</li>
+<li>Il software rileva automaticamente le serie con TE diversi e calcola T2</li>
+</ul>
+
+<div class="note"><b>Nota</b>: se si dispone di 3+ TE diversi, il software userà le due con TE più distanti (minimo e massimo) per massimizzare la sensibilità nel calcolo T2.</div>
+</div>
+
+<h2>4. Accuratezza Geometrica</h2>
+<div class="card">
+<h3>Principio</h3>
+<p>Si misurano 4 diametri del disco phantom lungo direzioni ortogonali e oblique (0°, 90°, 45°, 135°). La <b>distorsione geometrica</b> viene calcolata come variazione percentuale tra il diametro massimo e minimo.</p>
+<h3>Formula</h3>
+<div class="formula">Distorsione (%) = 100 × (D_max − D_min) / D_mean</div>
+<p>Dove D_mean è la media dei 4 diametri misurati.</p>
+<h3>Metodo di misura</h3>
+<p>Per ciascuna direzione si estrae un profilo di intensità passante per il centro del phantom. I bordi vengono identificati mediante gradiente del profilo e interpolazione sub-pixel al 50% del massimo (FWHM).</p>
+<h3>Criteri di accettabilità</h3>
+<table><tr><th>Criterio</th><th>Limite</th><th>Ref</th></tr>
+<tr><td>Distorsione</td><td>≤ 2%</td><td>ACR 2015</td></tr>
+<tr><td>Errore assoluto vs nominale</td><td>≤ 2 mm</td><td>ACR 2015</td></tr></table>
+</div>
+
+<h2>5. PIU — Uniformità di Immagine</h2>
+<div class="card">
+<h3>Principio</h3>
+<p>La PIU (Percent Image Uniformity) misura quanto il segnale è omogeneo nella regione utile (UFOV) del phantom. Si utilizza una convoluzione con maschera circolare di 1 cm² per smussare il rumore locale.</p>
+<h3>Formula</h3>
+<div class="formula">PIU (%) = 100 × [1 − (S_max − S_min) / (S_max + S_min)]</div>
+<p>Dove S_max e S_min sono il massimo e minimo della mappa convoluta nella UFOV (75% del raggio phantom).</p>
+<h3>Criteri</h3>
+<table><tr><th>Campo</th><th>Limite PIU</th><th>Ref</th></tr>
+<tr><td>< 3T</td><td>≥ 87.5%</td><td>ACR 2015</td></tr>
+<tr><td>≥ 3T</td><td>≥ 82%</td><td>ACR 2015</td></tr></table>
+<p class="ref">Ref: Epistatou et al., J. Imaging 2020, 6, 111 — Eq. (3), (4)</p>
+</div>
+
+<h2>6. PSG — Percent Signal Ghosting</h2>
+<div class="card">
+<h3>Principio</h3>
+<p>Il ghosting è un artefatto che produce repliche attenuate dell'immagine lungo la direzione di codifica di fase. Si misura con 4 ROI rettangolari nel background.</p>
+<h3>Geometria delle ROI</h3>
+<ul>
+<li><b>Up / Down</b>: ROI <b>orizzontali</b> (larghe, basse) — sopra e sotto il phantom</li>
+<li><b>Left / Right</b>: ROI <b>verticali</b> (strette, alte) — ai lati del phantom</li>
+</ul>
+<p>Area di ciascuna ROI: ≈ 10 cm². Distanza dal phantom: 10% del raggio.</p>
+<h3>Formula</h3>
+<div class="formula">PSG (%) = 100 × |((S_up + S_down) − (S_left + S_right)) / (2 × S_signal)|</div>
+<p>S_signal = segnale medio nella ROI circolare centrale (75% del raggio).</p>
+<h3>Criteri</h3>
+<table><tr><th>Standard</th><th>Limite</th></tr>
+<tr><td>ACR</td><td>≤ 2.5%</td></tr>
+<tr><td>AAPM</td><td>≤ 1.0%</td></tr></table>
+<p class="ref">Ref: ACR MRI QC Manual 2015, Eq. (1) — Epistatou et al. 2020</p>
+</div>
+
+<h2>7. SNR — Rapporto Segnale-Rumore</h2>
+<div class="card">
+<h3>Principio</h3>
+<p>Il SNR quantifica la qualità del segnale rispetto al rumore di fondo. È il parametro fondamentale per valutare le prestazioni della bobina e della catena di acquisizione.</p>
+<h3>Metodo Singola Immagine (NEMA MS 1-2008)</h3>
+<div class="formula">SNR = 0.665 × S_signal / σ_background</div>
+<p>Il fattore <b>0.665</b> corregge per la distribuzione Rayleigh del rumore nelle immagini di magnitudine.</p>
+<h3>Varianti disponibili</h3>
+<table><tr><th>Metodo</th><th>Rumore stimato da</th></tr>
+<tr><td><b>LR</b> (Left + Right)</td><td>Media di σ nelle ROI Left e Right del background</td></tr>
+<tr><td><b>4 Angoli</b></td><td>Media di σ nelle 4 ROI ai quattro angoli dell'immagine</td></tr></table>
+<h3>Note</h3>
+<ul>
+<li>S_signal: media nella ROI circolare centrale (UFOV 75%)</li>
+<li>σ_background: deviazione standard nelle ROI di background</li>
+<li>Non esistono limiti assoluti per SNR: si monitora il <b>trend temporale</b></li>
+</ul>
+<p class="ref">Ref: NEMA MS 1-2008; Kaufman et al., MRM 1989; Epistatou et al. 2020 Eq. (5)-(7)</p>
+</div>
+
+<h2>8. SNRU — Uniformità del SNR</h2>
+<div class="card">
+<h3>Principio</h3>
+<p>SNRU verifica che il SNR sia uniforme in tutta l'immagine. Si misurano 5 ROI circolari (centro + 4 cardinali) e si calcola la variazione.</p>
+<h3>Formula</h3>
+<div class="formula">SNRU (%) = 100 × [1 − (SNR_max − SNR_min) / (SNR_max + SNR_min)]</div>
+<h3>Geometria ROI</h3>
+<ul>
+<li>5 ROI circolari, area 1 cm² ciascuna</li>
+<li>Centro: al centro del phantom</li>
+<li>4 cardinali: a 60% del raggio dal centro (top, bottom, left, right)</li>
+</ul>
+<h3>Criteri</h3>
+<table><tr><th>Criterio</th><th>Limite</th></tr>
+<tr><td>SNRU</td><td>≥ 90%</td></tr></table>
+<div class="warn">Un SNRU basso può indicare: bobina guasta, disomogeneità di campo B1, correnti parassite.</div>
+<p class="ref">Ref: AAPM Report No. 100; IEC 62464-1:2018</p>
+</div>
+
+<h2>9. T2 — Tempo di Rilassamento Trasversale</h2>
+<div class="card">
+<h3>Principio</h3>
+<p>Il T2 del phantom viene stimato da <b>due acquisizioni</b> della stessa slice con <b>TE diversi</b>. Il decadimento esponenziale del segnale è:</p>
+<div class="formula">S(TE) = S₀ × exp(−TE / T2)</div>
+<h3>Formula di calcolo</h3>
+<p>Da due misure a TE₁ e TE₂ (con TE₂ > TE₁):</p>
+<div class="formula">T2 = (TE₂ − TE₁) / ln(S₁ / S₂)</div>
+<h3>Requisiti</h3>
+<ul>
+<li>Due serie T2-pesate con <b>stesso TR</b> e <b>TE diversi</b></li>
+<li>Stessa posizione slice (stessa z)</li>
+<li>S₁ > S₂ (il segnale deve decadere con TE crescente)</li>
+</ul>
+<h3>Note pratiche</h3>
+<div class="note">Il software rileva automaticamente le serie con TE diversi. Se disponibili, il bottone "T2 Auto" effettua il calcolo senza intervento dell'operatore. In alternativa, è possibile selezionare manualmente con Shift+Click.</div>
+<p class="ref">Ref: Bloembergen, Purcell & Pound 1948; Haacke et al., "Magnetic Resonance Imaging", Ch. 4</p>
+</div>
+
+<h2>10. Riferimenti Bibliografici</h2>
+<div class="card">
+<ol style="font-size:0.82rem;line-height:1.8">
+<li>ACR, "MRI Quality Control Manual", American College of Radiology, 2015</li>
+<li>ACR, "Phantom Test Guidance for Use of the Large and Medium MRI Phantoms", Rev. 10/2022</li>
+<li>AAPM, "Report No. 100: Acceptance Testing and QC of MRI Equipment", 2010</li>
+<li>IEC 62464-1:2018, "Magnetic Resonance Equipment for Medical Imaging"</li>
+<li>NEMA MS 1-2008, "Determination of Signal-to-Noise Ratio in MRI"</li>
+<li>Epistatou G. et al., "An Automated Method for QC in MRI Systems", J. Imaging 2020, 6, 111</li>
+<li>Golestani et al., "A statistical approach to automated analysis of the low-contrast object", J. Appl. Clin. Med. Phys. 2025</li>
+<li>Kaufman L. et al., "Measuring signal-to-noise ratios in MR imaging", Radiology 1989, 173:265-267</li>
+<li>Price R.R. et al., "Quality assurance methods and phantoms for MRI", Med. Phys. 1990, 17(2):287-295</li>
+</ol>
+</div>
+
+<h2>11. Glossario</h2>
+<div class="card">
+<table>
+<tr><th>Acronimo</th><th>Significato</th></tr>
+<tr><td>QC</td><td>Quality Control — Controllo di Qualità</td></tr>
+<tr><td>PIU</td><td>Percent Image Uniformity — Uniformità Percentuale dell'Immagine</td></tr>
+<tr><td>PSG</td><td>Percent Signal Ghosting — Percentuale di Ghosting del Segnale</td></tr>
+<tr><td>SNR</td><td>Signal-to-Noise Ratio — Rapporto Segnale-Rumore</td></tr>
+<tr><td>SNRU</td><td>SNR Uniformity — Uniformità del SNR</td></tr>
+<tr><td>UFOV</td><td>Useful Field of View — Campo di Vista Utile</td></tr>
+<tr><td>ROI</td><td>Region of Interest — Regione di Interesse</td></tr>
+<tr><td>TE</td><td>Echo Time — Tempo di Eco</td></tr>
+<tr><td>TR</td><td>Repetition Time — Tempo di Ripetizione</td></tr>
+<tr><td>FWHM</td><td>Full Width at Half Maximum — Larghezza a Metà Altezza</td></tr>
+<tr><td>NEMA</td><td>National Electrical Manufacturers Association</td></tr>
+<tr><td>ACR</td><td>American College of Radiology</td></tr>
+<tr><td>AAPM</td><td>American Association of Physicists in Medicine</td></tr>
+</table>
+</div>
+
+<p style="text-align:center;color:var(--dim);font-size:0.75rem;margin-top:40px;padding-top:16px;border-top:1px solid var(--border)">MRI QC Sphere Analyzer — Guida v1.0 — Giugno 2026</p>
+</body>
+</html>
