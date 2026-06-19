@@ -68,6 +68,7 @@ def main():
 
     # Override FRONTEND_DIR in api module before import
     os.environ["SPHERE_QC_FRONTEND_DIR"] = frontend_path
+    os.environ["SPHERE_QC_DATA_DIR"] = os.getcwd()
 
     # Open browser in background thread
     threading.Thread(target=open_browser, daemon=True).start()
