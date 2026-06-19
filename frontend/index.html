@@ -31,6 +31,7 @@
       <button class="step-btn" data-step="5"><span class="step-num">5</span> Report</button>
     </nav>
     <div class="toolbar-right">
+      <button id="btn-total-report" class="btn btn-xs btn-secondary">Report CQ totale</button>
       <a href="guida.html" class="btn btn-xs btn-secondary" style="text-decoration:none" title="Guida operativa">📖 Guida</a>
       <button id="btn-theme-toggle" class="btn btn-xs">☀</button>
     </div>
@@ -65,7 +66,6 @@
         <h2>Seleziona Slice</h2>
         <div class="panel-actions">
           <span id="series-info" class="badge badge-blue" style="font-size:11px"></span>
-          <button id="btn-change-series" class="btn btn-xs btn-secondary">Cambia Serie</button>
           <button id="btn-confirm-slice" class="btn btn-primary btn-xs" disabled>Conferma →</button>
         </div>
       </div>
@@ -83,7 +83,8 @@
           <button class="btn btn-xs size-btn" data-size="XL">XL</button>
         </div>
       </div>
-      <p class="hint">Click = seleziona analisi | Shift+Click = seleziona per T2</p>
+      <p class="hint">Seleziona una slice rappresentativa per ogni sequenza colorata.</p>
+      <div id="sequence-selection-summary" class="sequence-selection-summary"></div>
       <div id="slice-grid" class="slice-grid"></div>
       <div id="t2-selection" class="t2-bar hidden">
         <span>T2 → TE1: <b id="t2-te1-info">—</b> | TE2: <b id="t2-te2-info">—</b></span>

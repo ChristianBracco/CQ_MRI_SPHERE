@@ -22,18 +22,31 @@
   ensureTotalReportButton();
 
   function ensureTotalReportButton(){
-    if(document.getElementById("btn-total-report")) return;
     const printBtn=document.getElementById("btn-print");
-    if(!printBtn||!printBtn.parentElement) return;
+    if(printBtn) printBtn.textContent="Stampa report compatto";
+    if(document.getElementById("btn-total-report")) return;
+    const toolbarRight=document.querySelector(".toolbar-right");
+    if(!toolbarRight) return;
     const btn=document.createElement("button");
     btn.id="btn-total-report";
     btn.className="btn btn-xs btn-secondary";
     btn.textContent="Report CQ totale";
-    printBtn.parentElement.insertBefore(btn,printBtn);
+    toolbarRight.insertBefore(btn,toolbarRight.firstChild);
   }
 
   // ─── GRID SIZE ───
   const GRID_SIZES={S:80,M:120,L:180,XL:260};let gridSize="M";
+  const SEQ_COLORS=["#3b82f6","#22c55e","#f97316","#a855f7","#06b6d4","#ef4444"];
+  function sequenceColor(uid){const i=Math.max(0,AppState.sequences.findIndex(s=>s.uid===uid));return SEQ_COLORS[i%SEQ_COLORS.length];}
+  function sequenceLabel(seq){return `${seq?.description||"Seq"} TR=${seq?.tr_ms?.toFixed?.(0)||"?"} TE=${seq?.te_ms?.toFixed?.(0)||"?"}`;}
+  function currentAnalysisUid(){return AppState.activeAnalysisSequenceUid||AppState.activeSequenceUid||(AppState.sequences[0]?.uid||"");}
+  function setAnalysisSequence(uid){
+    AppState.activeAnalysisSequenceUid=uid;
+    AppState.activeSequenceUid=uid;
+    AppState.selectedSliceIdx=AppState.selectedSlicesBySequence[uid] ?? AppState.selectedSliceIdx;
+    AppState.results=AppState.resultsBySequence[uid]?.results||{};
+    if(AppState.sessionT2) AppState.results.t2=AppState.sessionT2;
+  }
   document.querySelectorAll(".size-btn").forEach(b=>{b.addEventListener("click",()=>{document.querySelectorAll(".size-btn").forEach(x=>x.classList.remove("active"));b.classList.add("active");gridSize=b.dataset.size;document.getElementById("slice-grid").style.setProperty("--grid-size",GRID_SIZES[gridSize]+"px");});});
 
   // ═══════════════════════════════════════════════════════════════════════════
@@ -55,7 +68,7 @@
     modal.querySelector("#fs-go").onclick=()=>nav(pI.value.trim());pI.onkeydown=e=>{if(e.key==="Enter")nav(pI.value.trim());};sB.onclick=()=>{inputDir.value=cur;btnLoad.disabled=false;modal.remove();};await nav(cur);
   }
 
-  btnLoad.addEventListener("click",async()=>{const dir=inputDir.value.trim();if(!dir)return;localStorage.setItem("sphere_qc_input_dir",dir);UI.show("load-progress");UI.setStatus("Caricamento...");try{const resp=await API.loadDicom(dir);AppState.inputDir=dir;AppState.sequences=resp.sequences||[];AppState.activeSequenceUid=resp.active_sequence_uid||"";AppState.slices=resp.slices||[];UI.hide("load-progress");try{AppState.dicomMeta=await API.getDicomMeta();}catch(e){}if(AppState.sequences.length>1){await showSeriesModal(resp);}else{UI.setStatus(`${resp.n_slices} slice`);setupStep2();UI.showStep(2);}}catch(err){UI.hide("load-progress");UI.setStatus(`Err: ${err.message}`);alert(err.message);}});
+  btnLoad.addEventListener("click",async()=>{const dir=inputDir.value.trim();if(!dir)return;localStorage.setItem("sphere_qc_input_dir",dir);UI.show("load-progress");UI.setStatus("Caricamento...");try{const resp=await API.loadDicom(dir);AppState.inputDir=dir;AppState.sequences=resp.sequences||[];AppState.activeSequenceUid=resp.active_sequence_uid||AppState.sequences[0]?.uid||"";AppState.activeAnalysisSequenceUid=AppState.activeSequenceUid;AppState.slices=resp.slices||[];AppState.resultsBySequence={};UI.hide("load-progress");try{AppState.dicomMeta=await API.getDicomMeta();}catch(e){}UI.setStatus(`${resp.n_total_slices||resp.n_slices} slice in ${AppState.sequences.length} sequenze`);setupStep2();UI.showStep(2);}catch(err){UI.hide("load-progress");UI.setStatus(`Err: ${err.message}`);alert(err.message);}});
 
   // ─── SERIES MODAL ───
   async function showSeriesModal(loadResp){
@@ -72,22 +85,43 @@
   // ═══════════════════════════════════════════════════════════════════════════
   // STEP 2: SLICE SELECTION
   // ═══════════════════════════════════════════════════════════════════════════
+  function sessionSelectionComplete(){return AppState.sequences.length>0&&AppState.sequences.every(s=>AppState.selectedSlicesBySequence[s.uid]!=null);}
   async function setupStep2(){
-    const si=document.getElementById("series-info"),act=AppState.sequences.find(s=>s.uid===AppState.activeSequenceUid);
-    if(act)si.textContent=`${act.description||"Seq"} TR=${act.tr_ms?.toFixed(0)} TE=${act.te_ms?.toFixed(0)}`;
+    const si=document.getElementById("series-info");
+    if(si)si.textContent=`${AppState.sequences.length} sequenze caricate`;
     const wl=+document.getElementById("wl-val").value||null,ww=+document.getElementById("ww-val").value||null;
-    try{const r=await API.getThumbnails(wl,ww,GRID_SIZES[gridSize]);AppState.thumbnails=r.thumbnails;renderSliceGrid();UI.setStatus("Seleziona slice");}catch(e){UI.setStatus(`Err: ${e.message}`);}
+    try{const r=await API.getMultiThumbnails(wl,ww,GRID_SIZES[gridSize]);AppState.multiThumbnails=r.thumbnails||[];AppState.sequences=r.sequences||AppState.sequences;AppState.sequences.forEach(s=>{if(AppState.selectedSlicesBySequence[s.uid]==null)AppState.selectedSlicesBySequence[s.uid]=Math.floor((s.n_slices||1)/2);});setAnalysisSequence(currentAnalysisUid());updateT2Bar();renderSliceGrid();UI.setStatus("Seleziona una slice per sequenza");}catch(e){UI.setStatus(`Err: ${e.message}`);}
   }
   function renderSliceGrid(){
+    renderSequenceSelectionSummary();
     const grid=document.getElementById("slice-grid");grid.style.setProperty("--grid-size",GRID_SIZES[gridSize]+"px");grid.innerHTML="";
+    if(AppState.multiThumbnails?.length){
+      AppState.multiThumbnails.forEach(t=>{const seq=AppState.sequences.find(s=>s.uid===t.uid)||{};const color=sequenceColor(t.uid);const c=document.createElement("div");c.className="slice-card multi-seq";c.style.setProperty("--seq-color",color);if(AppState.selectedSlicesBySequence[t.uid]===t.idx)c.classList.add("selected");
+        c.innerHTML=`<img src="data:image/png;base64,${t.image}"/><div class="slice-info"><span>${seq.description||"Seq"}</span><span>#${t.idx}</span><span>TE=${t.te_ms||"?"}</span></div>${AppState.selectedSlicesBySequence[t.uid]===t.idx?'<span class="slice-tag">SEL</span>':""}`;
+        c.addEventListener("click",()=>{AppState.selectedSlicesBySequence[t.uid]=t.idx;setAnalysisSequence(t.uid);document.getElementById("btn-confirm-slice").disabled=!sessionSelectionComplete();renderSliceGrid();updateT2Bar();});grid.appendChild(c);});
+      document.getElementById("btn-confirm-slice").disabled=!sessionSelectionComplete();
+      return;
+    }
     AppState.thumbnails.forEach((t,i)=>{const c=document.createElement("div");c.className="slice-card";if(i===AppState.selectedSliceIdx)c.classList.add("selected");if(i===AppState.selectedT2SliceIdx)c.classList.add("selected-t2");
       c.innerHTML=`<img src="data:image/png;base64,${t.image}"/><div class="slice-info"><span>#${i}</span><span>z=${t.z}</span><span>TE=${t.te_ms||"?"}</span></div>${i===AppState.selectedSliceIdx?'<span class="slice-tag">★</span>':''}${i===AppState.selectedT2SliceIdx?'<span class="slice-tag t2">T2</span>':''}`;
       c.addEventListener("click",e=>{if(e.shiftKey){AppState.selectedT2SliceIdx=i;updateT2Bar();}else{AppState.selectedSliceIdx=i;}document.getElementById("btn-confirm-slice").disabled=AppState.selectedSliceIdx<0;renderSliceGrid();});grid.appendChild(c);});
   }
+  function renderSequenceSelectionSummary(){
+    const el=document.getElementById("sequence-selection-summary");if(!el)return;
+    if(!AppState.sequences?.length){el.innerHTML="";return;}
+    el.innerHTML=AppState.sequences.map(s=>{
+      const selected=AppState.selectedSlicesBySequence[s.uid];
+      const ready=selected!=null;
+      return `<button type="button" class="sequence-chip ${ready?'ready':''} ${s.uid===currentAnalysisUid()?'active':''}" data-seq-chip="${s.uid}" style="--seq-color:${sequenceColor(s.uid)}"><span>${s.description||"Seq"}</span><b>#${ready?selected:"-"}</b><small>TR ${s.tr_ms?.toFixed?.(0)||"?"} / TE ${s.te_ms?.toFixed?.(0)||"?"}</small></button>`;
+    }).join("");
+    el.querySelectorAll("[data-seq-chip]").forEach(btn=>btn.addEventListener("click",()=>{setAnalysisSequence(btn.dataset.seqChip);renderSliceGrid();}));
+  }
   function updateT2Bar(){if(AppState.selectedT2SliceIdx>=0){UI.show("t2-selection");const t1=AppState.thumbnails[AppState.selectedSliceIdx],t2=AppState.thumbnails[AppState.selectedT2SliceIdx];document.getElementById("t2-te1-info").textContent=t1?`#${AppState.selectedSliceIdx} TE=${t1.te_ms}ms`:"—";document.getElementById("t2-te2-info").textContent=t2?`#${AppState.selectedT2SliceIdx} TE=${t2.te_ms}ms`:"—";}else UI.hide("t2-selection");}
+  const updateT2BarLegacy=updateT2Bar;
+  updateT2Bar=function(){if(AppState.multiThumbnails?.length){UI.show("t2-selection");const parts=AppState.sequences.map(s=>`${s.description||"Seq"} #${AppState.selectedSlicesBySequence[s.uid]??"-"} TE=${s.te_ms||"?"}ms`);document.getElementById("t2-te1-info").textContent=parts.slice(0,2).join(" | ")||"-";document.getElementById("t2-te2-info").textContent=parts.slice(2).join(" | ")||"T2 auto su TE min/max";return;}updateT2BarLegacy();};
   document.getElementById("btn-refresh-thumbs")?.addEventListener("click",()=>setupStep2());
   document.getElementById("btn-wl-auto")?.addEventListener("click",()=>{document.getElementById("wl-val").value=0;document.getElementById("ww-val").value=0;setupStep2();});
-  document.getElementById("btn-confirm-slice")?.addEventListener("click",()=>{if(AppState.selectedSliceIdx<0)return;setupStep3();UI.showStep(3);});
+  document.getElementById("btn-confirm-slice")?.addEventListener("click",()=>{if(AppState.multiThumbnails?.length){if(!sessionSelectionComplete())return;setAnalysisSequence(currentAnalysisUid());}else if(AppState.selectedSliceIdx<0)return;setupStep3();UI.showStep(3);});
 
   // ═══════════════════════════════════════════════════════════════════════════
   // STEP 3: INFO
@@ -113,11 +147,12 @@
   function renderModule(mod){
     const content=document.getElementById("module-content"),r=AppState.results[mod];
     if(mod==="t2"){renderT2(content,r);return;}
+    const seqSwitch=AppState.sequences.length>1?`<div class="sequence-switch">${AppState.sequences.map(s=>`<button class="btn btn-xs ${s.uid===currentAnalysisUid()?'btn-primary':'btn-secondary'}" data-seq="${s.uid}" style="border-left:4px solid ${sequenceColor(s.uid)}">${s.description||'Seq'} TE=${s.te_ms||'?'}</button>`).join("")}</div>`:"";
 
     // SNR method selector for snr tab
     const snrSel=mod==="snr"?`<select id="snr-method" style="font-size:11px;padding:3px 6px;background:var(--bg-input);color:var(--text-primary);border:1px solid var(--border);border-radius:3px"><option value="single_lr" ${snrMethod==="single_lr"?"selected":""}>LR (Left+Right)</option><option value="single_4corner" ${snrMethod==="single_4corner"?"selected":""}>4 Angoli</option><option value="single_4bg" ${snrMethod==="single_4bg"?"selected":""}>4 BG (PSG-style)</option></select>`:"";
 
-    content.innerHTML=`<div class="module-layout"><div class="module-image-panel">
+    content.innerHTML=`${seqSwitch}<div class="module-layout"><div class="module-image-panel">
       <div class="canvas-controls">
         <button class="btn btn-primary btn-xs run-btn" id="btn-run">▶ Run</button><button class="btn btn-secondary btn-xs" id="btn-reset" title="Reset ROI alle posizioni automatiche">↺ Reset</button>${snrSel}
         <label>Zoom<input type="range" id="sl-zoom" min="0.5" max="3" step="0.1" value="${curZoom}"/></label>
@@ -132,6 +167,7 @@
     document.getElementById("sl-wl")?.addEventListener("change",e=>{curWL=+e.target.value;loadImage();});
     document.getElementById("sl-ww")?.addEventListener("change",e=>{curWW=+e.target.value;loadImage();});
     document.getElementById("snr-method")?.addEventListener("change",e=>{snrMethod=e.target.value;});
+    content.querySelectorAll("[data-seq]").forEach(btn=>{btn.addEventListener("click",()=>{setAnalysisSequence(btn.dataset.seq);renderModule(mod);setupStep4();});});
     document.getElementById("btn-run")?.addEventListener("click",()=>runAnalysis(mod));
     document.getElementById("btn-reset")?.addEventListener("click",()=>runAnalysisReset(mod));
     if(r)setTimeout(()=>drawROIs(mod,r),100);
@@ -139,7 +175,7 @@
 
   async function loadImage(){
     const idx=AppState.selectedSliceIdx;if(idx<0)return;
-    try{const r=await API.getSliceImage(idx,curWL||null,curWW||null,0);const img=document.getElementById("dcm-img");if(img){img.src=`data:image/png;base64,${r.image}`;img.onload=syncSvgSize;}}catch(e){}
+    try{const uid=currentAnalysisUid();const r=AppState.multiThumbnails?.length?await API.getSequenceSliceImage(uid,idx,curWL||null,curWW||null,0):await API.getSliceImage(idx,curWL||null,curWW||null,0);const img=document.getElementById("dcm-img");if(img){img.src=`data:image/png;base64,${r.image}`;img.onload=syncSvgSize;}}catch(e){}
   }
   function syncSvgSize(){const img=document.getElementById("dcm-img"),svg=document.getElementById("roi-svg");if(!img||!svg||!img.naturalWidth)return;const w=img.naturalWidth*curZoom,h=img.naturalHeight*curZoom;svg.setAttribute("width",w);svg.setAttribute("height",h);svg.setAttribute("viewBox",`0 0 ${img.naturalWidth} ${img.naturalHeight}`);svg.style.width=w+"px";svg.style.height=h+"px";}
 
@@ -266,8 +302,10 @@
       // Read current ROI positions from SVG to pass as kwargs
       const kwargs = collectRoiKwargs(mod);
       if(mod==="snr") kwargs.snr_method=snrMethod;
-      const resp=await API.analyze(mod,AppState.selectedSliceIdx,kwargs);
+      const uid=currentAnalysisUid();
+      const resp=AppState.multiThumbnails?.length?await API.analyzeSequence(uid,mod,AppState.selectedSliceIdx,kwargs):await API.analyze(mod,AppState.selectedSliceIdx,kwargs);
       AppState.results[mod]=resp.results;
+      if(AppState.multiThumbnails?.length)AppState.resultsBySequence[uid]={...(AppState.resultsBySequence[uid]||{}),uid,slice_idx:AppState.selectedSliceIdx,meta:AppState.sequences.find(s=>s.uid===uid),results:{...(AppState.resultsBySequence[uid]?.results||{}),[mod]:resp.results}};
       renderModule(mod);setupStep4();UI.setStatus(`${AppState.moduleLabels[mod]} OK`);
       saveCurrentAcquisition(true).catch(()=>{});
     }catch(e){UI.setStatus(`Err: ${e.message}`);alert(e.message);}
@@ -278,8 +316,10 @@
     UI.setStatus(`${mod} reset...`);
     try{
       const kwargs=mod==="snr"?{snr_method:snrMethod}:{};
-      const resp=await API.analyze(mod,AppState.selectedSliceIdx,kwargs);
+      const uid=currentAnalysisUid();
+      const resp=AppState.multiThumbnails?.length?await API.analyzeSequence(uid,mod,AppState.selectedSliceIdx,kwargs):await API.analyze(mod,AppState.selectedSliceIdx,kwargs);
       AppState.results[mod]=resp.results;
+      if(AppState.multiThumbnails?.length)AppState.resultsBySequence[uid]={...(AppState.resultsBySequence[uid]||{}),uid,slice_idx:AppState.selectedSliceIdx,meta:AppState.sequences.find(s=>s.uid===uid),results:{...(AppState.resultsBySequence[uid]?.results||{}),[mod]:resp.results}};
       renderModule(mod);setupStep4();UI.setStatus(`${AppState.moduleLabels[mod]} reset OK`);
       saveCurrentAcquisition(true).catch(()=>{});
     }catch(e){UI.setStatus(`Err: ${e.message}`);alert(e.message);}
@@ -354,7 +394,15 @@
   // ─── T2 TAB ───
   function renderT2(content,r){
     const seqs=AppState.sequences;
-    const teVals=[...new Set(seqs.map(s=>s.te_ms).filter(v=>v>0))].sort((a,b)=>a-b);
+    const seqText=s=>String(`${s.description||""} ${s.protocol||""}`).toUpperCase();
+    const seqTokens=s=>" "+seqText(s).replace(/[^A-Z0-9]+/g," ")+" ";
+    const isSpinEcho=s=>{
+      const text=seqText(s),tok=seqTokens(s);
+      if(text.includes("T2*")||[" GRE "," GR "," SPGR "," FFE "," TFE "," FLASH "," FISP "," SSFP "," DESS "," EPI "," T2STAR "," T2 STAR "].some(x=>tok.includes(x))) return false;
+      return [" SE "," FSE "," TSE "," CSE "," SPIN ECHO "].some(x=>tok.includes(x))||text.includes("SPIN ECHO");
+    };
+    const t2Seqs=seqs.filter(s=>s.te_ms>0&&isSpinEcho(s));
+    const teVals=[...new Set(t2Seqs.map(s=>s.te_ms).filter(v=>v>0))].sort((a,b)=>a-b);
     const canAuto=teVals.length>=2;
 
     // Show available sequences for manual T2 selection
@@ -363,7 +411,8 @@
       seqList=`<div style="margin:8px 0"><p style="font-size:11px;font-weight:600;margin-bottom:4px">Serie disponibili per T2:</p><table class="result-table" style="font-size:11px"><tr><th>Serie</th><th>TE</th><th>TR</th><th>#</th><th></th></tr>`;
       seqs.forEach((s,i)=>{
         const isCur=s.uid===AppState.activeSequenceUid;
-        seqList+=`<tr style="${isCur?'background:rgba(59,130,246,0.1)':''}"><td>${s.description||'—'}</td><td><b>${s.te_ms?.toFixed(0)||'?'}</b> ms</td><td>${s.tr_ms?.toFixed(0)||'?'}</td><td>${s.n_slices}</td><td>${isCur?'★ attiva':''}</td></tr>`;
+        const se=isSpinEcho(s);
+        seqList+=`<tr style="${isCur?'background:rgba(59,130,246,0.1)':''}"><td>${s.description||'—'}</td><td><b>${s.te_ms?.toFixed(0)||'?'}</b> ms</td><td>${s.tr_ms?.toFixed(0)||'?'}</td><td>${s.n_slices}</td><td>${se?'Spin Echo':'esclusa T2'} ${isCur?'★':''}</td></tr>`;
       });
       seqList+=`</table></div>`;
     }
@@ -373,7 +422,7 @@
         <button class="btn btn-primary btn-xs" id="btn-t2-auto" ${canAuto?"":"disabled"}>▶ T2 Auto</button>
         <button class="btn btn-secondary btn-xs" id="btn-t2-manual" ${AppState.selectedT2SliceIdx>=0?"":"disabled"}>▶ T2 Manuale</button>
       </div>
-      ${canAuto?`<p style="font-size:12px;color:var(--accent-green);margin:8px 0">✓ TE rilevati: <b>${teVals.join(", ")}</b> ms — T2 auto disponibile</p>`:`<p style="font-size:12px;color:var(--text-muted);margin:8px 0">Servono 2+ serie con TE diversi per T2 auto.</p>`}
+      ${canAuto?`<p style="font-size:12px;color:var(--accent-green);margin:8px 0">✓ Spin Echo rilevate: <b>${teVals.join(", ")}</b> ms — T2 auto disponibile</p>`:`<p style="font-size:12px;color:var(--text-muted);margin:8px 0">Servono 2+ serie Spin Echo con TE diversi per T2 auto.</p>`}
       ${seqList}
       ${AppState.selectedT2SliceIdx>=0?`<p style="font-size:11px;color:var(--accent-purple)">T2 manuale: slice #${AppState.selectedSliceIdx} vs #${AppState.selectedT2SliceIdx}</p>`:`<p style="font-size:11px;color:var(--text-muted)">Per T2 manuale: torna allo Step 2 e Shift+Click su una slice di altra serie.</p>`}
       ${r&&r.series1_description?`<p style="font-size:11px;color:var(--text-secondary);margin-top:6px">Usate: ${r.series1_description} (TE=${r.te1_ms}) vs ${r.series2_description} (TE=${r.te2_ms})</p>`:''}
@@ -390,7 +439,7 @@
 
   async function runT2Auto(){
     UI.setStatus("T2 auto...");
-    try{const r=await API.analyzeT2Auto(AppState.selectedSliceIdx);AppState.results["t2"]=r.results;renderModule("t2");setupStep4();UI.setStatus("T2 OK");saveCurrentAcquisition(true).catch(()=>{});}
+    try{if(AppState.multiThumbnails?.length){const resp=await API.analyzeAllSequences(AppState.selectedSlicesBySequence,snrMethod);if(resp.results_by_sequence)AppState.resultsBySequence=resp.results_by_sequence;if(resp.t2)AppState.sessionT2=resp.t2;AppState.results.t2=AppState.sessionT2;renderModule("t2");setupStep4();UI.setStatus("T2 sessione OK");saveSessionAcquisition(true).catch(()=>{});return;}const r=await API.analyzeT2Auto(AppState.selectedSliceIdx);AppState.results["t2"]=r.results;renderModule("t2");setupStep4();UI.setStatus("T2 OK");saveCurrentAcquisition(true).catch(()=>{});}
     catch(e){UI.setStatus(`T2: ${e.message}`);alert("T2 auto fallito: "+e.message);}
   }
   async function runT2Manual(){
@@ -403,11 +452,12 @@
   // Analyze All
   document.getElementById("btn-analyze-all")?.addEventListener("click",async()=>{
     UI.setStatus("Analisi completa...");
-    try{const resp=await API.analyzeAll(AppState.selectedSliceIdx);if(resp.results)for(const[m,r]of Object.entries(resp.results))AppState.results[m]=r;
+    try{if(AppState.multiThumbnails?.length){const resp=await API.analyzeAllSequences(AppState.selectedSlicesBySequence,snrMethod);AppState.resultsBySequence=resp.results_by_sequence||{};if(resp.t2)AppState.sessionT2=resp.t2;const uid=currentAnalysisUid();AppState.results=AppState.resultsBySequence[uid]?.results||{};if(AppState.sessionT2)AppState.results.t2=AppState.sessionT2;setupStep4();await saveSessionAcquisition(true);UI.setStatus("Sessione analizzata e salvata");return;}
+      const resp=await API.analyzeAll(AppState.selectedSliceIdx);if(resp.results)for(const[m,r]of Object.entries(resp.results))AppState.results[m]=r;
       try{await runT2Auto();}catch(e){}
       setupStep4();await saveCurrentAcquisition(true);UI.setStatus("Completata e salvata");}catch(e){UI.setStatus(`Err: ${e.message}`);}
   });
-  document.getElementById("btn-go-report")?.addEventListener("click",async()=>{try{await saveCurrentAcquisition(true);}catch(e){}await setupStep5();UI.showStep(5);});
+  document.getElementById("btn-go-report")?.addEventListener("click",async()=>{try{if(AppState.multiThumbnails?.length)await saveSessionAcquisition(true);else await saveCurrentAcquisition(true);}catch(e){}if(AppState.multiThumbnails?.length)await setupTotalReport();else await setupStep5();UI.showStep(5);});
 
   // ═══════════════════════════════════════════════════════════════════════════
   // RESULTS RENDERING
@@ -444,14 +494,16 @@
 
   function acquisitionKey(){
     const m=AppState.dicomMeta||{};
+    const uid=currentAnalysisUid();
+    const seq=AppState.sequences.find(s=>s.uid===uid)||{};
     return [
       AppState.inputDir||"",
-      AppState.activeSequenceUid||"",
+      uid||"",
       m.study_date||"",
-      m.series_description||"",
-      m.protocol||"",
-      m.te_ms||"",
-      m.tr_ms||"",
+      seq.description||m.series_description||"",
+      seq.description||m.protocol||"",
+      seq.te_ms??m.te_ms??"",
+      seq.tr_ms??m.tr_ms??"",
       AppState.selectedSliceIdx
     ].join("|");
   }
@@ -459,6 +511,8 @@
   function buildHistoryEntry(){
     const info=controlInfoFromForm();
     const m=AppState.dicomMeta||{};
+    const uid=currentAnalysisUid();
+    const seq=AppState.sequences.find(s=>s.uid===uid)||{};
     const date=info.data_controllo||studyDateIso(m)||new Date().toISOString().slice(0,10);
     return {
       date,
@@ -469,8 +523,8 @@
       phantom_type:AppState.phantomType,
       selected_slice_idx:AppState.selectedSliceIdx,
       input_dir:AppState.inputDir,
-      active_sequence_uid:AppState.activeSequenceUid,
-      meta:m,
+      active_sequence_uid:uid,
+      meta:{...m,series_description:seq.description||m.series_description,protocol:seq.description||m.protocol,tr_ms:seq.tr_ms??m.tr_ms,te_ms:seq.te_ms??m.te_ms,n_slices:seq.n_slices??m.n_slices},
       control_info:info,
       results:AppState.results
     };
@@ -479,13 +533,85 @@
   async function saveCurrentAcquisition(silent=false){
     const analyzed=Object.keys(AppState.results||{}).filter(k=>AppState.results[k]&&!AppState.results[k].error);
     if(analyzed.length===0) return null;
-    const resp=await API.saveHistory(buildHistoryEntry());
-    if(!silent) UI.setStatus("Salvato");
+    const resp=await saveHistoryWithDuplicatePrompt(buildHistoryEntry());
+    if(!silent&&resp?.success!==false) UI.setStatus("Salvato");
     return resp;
+  }
+
+  async function saveHistoryWithDuplicatePrompt(entry,promptState=null){
+    let resp=await API.saveHistory(entry,false);
+    if(resp?.duplicate){
+      if(promptState&&promptState.overwrite===undefined){
+        promptState.overwrite=window.confirm("La sessione contiene acquisizioni già presenti nello storico.\n\nVuoi sovrascrivere i dati esistenti della sessione?");
+      }
+      if(promptState&&promptState.overwrite===false){
+        UI.setStatus("Salvataggio annullato: sessione già presente");
+        return resp;
+      }
+      const label=entry?.meta?.series_description||entry?.meta?.protocol||"questa acquisizione";
+      const ok=promptState?promptState.overwrite:window.confirm(`L'analisi di ${label} per questa data è già presente nello storico.\n\nVuoi sovrascrivere il dato esistente?`);
+      if(!ok){
+        UI.setStatus("Salvataggio annullato: analisi già presente");
+        return resp;
+      }
+      resp=await API.saveHistory(entry,true);
+    }
+    return resp;
+  }
+
+  function buildSequenceHistoryEntry(seqData,idx,sessionId){
+    const info=controlInfoFromForm();
+    const base=AppState.dicomMeta||{};
+    const seq=seqData.meta||AppState.sequences.find(s=>s.uid===seqData.uid)||{};
+    const date=info.data_controllo||studyDateIso(base)||new Date().toISOString().slice(0,10);
+    const results={...(seqData.results||{})};
+    if(idx===0&&AppState.sessionT2&&!AppState.sessionT2.error) results.t2=AppState.sessionT2;
+    return {
+      date,
+      analysis_date:date,
+      study_date:studyDateIso(base),
+      session_id:sessionId,
+      acquisition_id:[sessionId,seqData.uid,seqData.slice_idx].join("|"),
+      saved_at:new Date().toISOString(),
+      phantom_type:AppState.phantomType,
+      selected_slice_idx:seqData.slice_idx,
+      input_dir:AppState.inputDir,
+      active_sequence_uid:seqData.uid,
+      meta:{...base,series_description:seq.description,protocol:seq.description||base.protocol,tr_ms:seq.tr_ms,te_ms:seq.te_ms,n_slices:seq.n_slices},
+      control_info:info,
+      results
+    };
+  }
+
+  async function saveSessionAcquisition(silent=false){
+    const items=Object.values(AppState.resultsBySequence||{}).filter(x=>x?.results&&Object.keys(x.results).length);
+    if(!items.length) return null;
+    const sessionId=[AppState.inputDir||"",controlInfoFromForm().data_controllo||"",new Date().toISOString().slice(0,10)].join("|");
+    let last=null;
+    const promptState={overwrite:undefined};
+    for(let i=0;i<items.length;i++){
+      last=await saveHistoryWithDuplicatePrompt(buildSequenceHistoryEntry(items[i],i,sessionId),promptState);
+      if(last?.duplicate&&!promptState.overwrite) return last;
+    }
+    if(!silent&&last?.success!==false) UI.setStatus("Sessione salvata");
+    return last;
   }
 
   function entryDate(e){
     return e?.analysis_date||e?.date||e?.study_date||"";
+  }
+
+  function acquisitionDate(e){
+    const sd=e?.study_date||e?.meta?.study_date||"";
+    if(/^\d{4}-\d{2}-\d{2}$/.test(sd)) return sd;
+    if(/^\d{8}$/.test(sd)) return `${sd.substring(0,4)}-${sd.substring(4,6)}-${sd.substring(6,8)}`;
+    return entryDate(e);
+  }
+
+  function displayDate(date){
+    if(/^\d{4}-\d{2}-\d{2}$/.test(date)) return `${date.substring(8,10)}/${date.substring(5,7)}/${date.substring(0,4)}`;
+    if(/^\d{8}$/.test(date)) return `${date.substring(6,8)}/${date.substring(4,6)}/${date.substring(0,4)}`;
+    return date||"-";
   }
 
   function sameDayEntries(hist,date){
@@ -517,67 +643,341 @@
     return v==null?"-":`${UI.fmt(v,d)}${u}`;
   }
 
+  function filenamePart(value,fallback="NA"){
+    return String(value||fallback).trim().replace(/[^a-zA-Z0-9]+/g,"_").replace(/^_+|_+$/g,"").substring(0,40)||fallback;
+  }
+
+  const aggregateMetrics=[
+    {label:"Distorsione %",mod:"geometric",key:"distortion_percent",dec:3,unit:" %",passMod:"geometric",lim:[{value:2,label:"2%",color:"#ef4444"}]},
+    {label:"PIU %",mod:"piu",key:"piu_percent",dec:2,unit:" %",passMod:"piu",lim:[{value:87.5,label:"87.5%",color:"#22c55e"}]},
+    {label:"PSG %",mod:"psg",key:"psg_percent",dec:4,unit:" %",passMod:"psg",lim:[{value:2.5,label:"2.5%",color:"#ef4444"}]},
+    {label:"SNR",mod:"snr",key:"snr",dec:2,unit:"",passMod:null,lim:[]},
+    {label:"SNRU %",mod:"snru",key:"snru_percent",dec:2,unit:" %",passMod:"snru",lim:[{value:90,label:"90%",color:"#22c55e"}]},
+    {label:"T2 ms",mod:"t2",key:"t2_ms",dec:2,unit:" ms",passMod:null,lim:[]}
+  ];
+
+  const recommendedProtocols=[
+    {name:"AX T2* GRE",tr:500,te:15,flip:"60",fov:"270",matrix:"256x160",averages:"1",slice:"5",scope:"Geometria, PIU, PSG, SNR, SNRU"},
+    {name:"T1 SE",tr:500,te:30,flip:"90",fov:"270",matrix:"256x160",averages:"1",slice:"5",scope:"T2 Spin Echo (TE corto)"},
+    {name:"T1 SE",tr:500,te:100,flip:"90",fov:"270",matrix:"256x160",averages:"1",slice:"5",scope:"T2 Spin Echo (TE lungo)"}
+  ];
+
+  function recommendedProtocolFor(meta){
+    const desc=String(meta?.series_description||meta?.protocol||"").toUpperCase();
+    const te=Number(meta?.te_ms);
+    if(desc.includes("GRE")||desc.includes("T2*")) return recommendedProtocols[0];
+    if(desc.includes("SE")||desc.includes("T1")){
+      if(Number.isFinite(te)&&te>60) return recommendedProtocols[2];
+      return recommendedProtocols[1];
+    }
+    if(Number.isFinite(te)){
+      if(te<=20) return recommendedProtocols[0];
+      if(te>60) return recommendedProtocols[2];
+      return recommendedProtocols[1];
+    }
+    return null;
+  }
+
+  function protocolMinute(e,i){
+    const m=e.meta||{};
+    const rec=recommendedProtocolFor(m);
+    const actual=`TR ${m.tr_ms??"-"} ms / TE ${m.te_ms??"-"} ms`;
+    const recLine=rec?`${rec.name}: TR ${rec.tr} ms / TE ${rec.te} ms / Flip ${rec.flip} / FOV ${rec.fov} mm / Matrix ${rec.matrix} / NEX ${rec.averages} / Slice ${rec.slice} mm`:"Raccomandazione non trovata";
+    return `<div class="report-metric protocol-minute">
+      <span class="label">${resultLabel(e,i)}</span>
+      <span class="value">${displayDate(acquisitionDate(e))}</span>
+      <span class="label">Acquisito: ${actual}</span>
+      <span class="label">Guida: ${recLine}</span>
+      ${rec?`<span class="label">Scopo: ${rec.scope}</span>`:""}
+    </div>`;
+  }
+
+  function sequenceKey(e){
+    const m=e?.meta||{};
+    return e?.active_sequence_uid||[
+      m.series_instance_uid||"",
+      m.series_description||m.protocol||"",
+      m.tr_ms??"",
+      m.te_ms??""
+    ].join("|");
+  }
+
+  function sequenceTitle(e,idx){
+    const m=e?.meta||{};
+    const desc=m.series_description||m.protocol||`Sequenza ${idx+1}`;
+    const tr=m.tr_ms!=null?`TR ${UI.fmt(m.tr_ms,0)} ms`:"";
+    const te=m.te_ms!=null?`TE ${UI.fmt(m.te_ms,0)} ms`:"";
+    return [desc,tr,te].filter(Boolean).join(" - ");
+  }
+
+  function sortedHistory(hist){
+    return (hist||[]).slice().sort((a,b)=>{
+      const ad=acquisitionDate(a)||entryDate(a)||"";
+      const bd=acquisitionDate(b)||entryDate(b)||"";
+      if(ad!==bd) return ad.localeCompare(bd);
+      return (a.saved_at||"").localeCompare(b.saved_at||"");
+    });
+  }
+
+  function historyForSequence(hist,seqEntry){
+    const key=sequenceKey(seqEntry);
+    const byDate=new Map();
+    sortedHistory(hist).filter(e=>sequenceKey(e)===key).forEach(e=>{
+      const date=acquisitionDate(e)||e.saved_at||"";
+      byDate.set(date,e);
+    });
+    return Array.from(byDate.values());
+  }
+
+  function sameHistoryEntry(a,b){
+    if(!a||!b) return false;
+    if(a.acquisition_id&&b.acquisition_id) return a.acquisition_id===b.acquisition_id;
+    if(a.saved_at&&b.saved_at) return a.saved_at===b.saved_at;
+    return a===b;
+  }
+
+  function previousMetricValue(hist,entry,metric){
+    const seqHist=historyForSequence(hist,entry);
+    const idx=seqHist.findIndex(e=>sameHistoryEntry(e,entry));
+    const end=idx>=0?idx:seqHist.length;
+    for(let i=end-1;i>=0;i--){
+      const v=metricValue(seqHist[i].results,metric.mod,metric.key);
+      if(v!=null) return v;
+    }
+    return null;
+  }
+
+  function t2SessionKey(e){
+    return acquisitionDate(e)||entryDate(e)||e?.study_date||e?.analysis_date||e?.date||"";
+  }
+
+  function t2TrendEntries(hist){
+    const bySession=new Map();
+    sortedHistory(hist).forEach(e=>{
+      if(metricValue(e.results,"t2","t2_ms")==null) return;
+      const key=t2SessionKey(e);
+      if(!key) return;
+      bySession.set(key,e);
+    });
+    return Array.from(bySession.values());
+  }
+
+  function t2EntryForSession(entries){
+    return (entries||[]).slice().reverse().find(e=>metricValue(e.results,"t2","t2_ms")!=null)||null;
+  }
+
+  function previousT2Value(hist,entry){
+    const t2Hist=t2TrendEntries(hist);
+    const idx=t2Hist.findIndex(e=>sameHistoryEntry(e,entry)||t2SessionKey(e)===t2SessionKey(entry));
+    const end=idx>=0?idx:t2Hist.length;
+    for(let i=end-1;i>=0;i--){
+      const v=metricValue(t2Hist[i].results,"t2","t2_ms");
+      if(v!=null) return v;
+    }
+    return null;
+  }
+
+  function metricSequencePass(metric,entry,hist){
+    if(metric.passMod) return metricPass(entry.results,metric.passMod);
+    const value=metricValue(entry.results,metric.mod,metric.key);
+    if(value==null) return null;
+    if(metric.mod==="t2"){
+      const prev=previousT2Value(hist,entry);
+      if(prev==null) return null;
+      return value>=prev*0.9;
+    }
+    if(metric.mod==="snr"){
+      const prev=previousMetricValue(hist,entry,metric);
+      if(prev==null) return null;
+      return value>=prev*0.9;
+    }
+    return null;
+  }
+
+  function passText(pass){
+    return pass===true?"PASS":pass===false?"FAIL":"-";
+  }
+
+  function piuLimitForEntry(entry){
+    const explicit=Number(entry?.results?.piu?.limit);
+    if(Number.isFinite(explicit)&&explicit>0) return explicit;
+    const field=Number(entry?.meta?.magnetic_field_T ?? AppState.dicomMeta?.magnetic_field_T);
+    return Number.isFinite(field)&&field>=3 ? 82 : 87.5;
+  }
+
+  function criteriaTextForMetric(metric,entry=null,hist=[]){
+    if(metric.mod==="geometric") return "PASS se Distorsione <= 2% e Errore massimo <= 2 mm";
+    if(metric.mod==="piu") return `PASS se PIU >= ${piuLimitForEntry(entry)}%`;
+    if(metric.mod==="psg") return "PASS se PSG <= 2.5%";
+    if(metric.mod==="snru") return "PASS se SNRU >= 90%";
+    if(metric.mod==="snr"){
+      const prev=entry?previousMetricValue(hist,entry,metric):null;
+      return prev==null ? "Non valutabile senza misura precedente; parametro monitorato a trend" : `PASS se SNR >= 90% del precedente (${UI.fmt(prev,2)})`;
+    }
+    if(metric.mod==="t2"){
+      const prev=entry?previousT2Value(hist,entry):null;
+      return prev==null ? "Non valutabile senza T2 precedente; calcolo solo da due Spin Echo a TE diversi" : `PASS se T2 >= 90% del precedente (${UI.fmt(prev,2)} ms)`;
+    }
+    return "-";
+  }
+
+  function renderPassFailCriteriaCard(entries=[],hist=[]){
+    const representative=(entries||[])[0]||null;
+    const rows=[
+      ["Distorsione Geometrica","Distorsione <= 2% e Errore massimo <= 2 mm","FAIL se una delle due condizioni non e' rispettata"],
+      ["PIU",`PIU >= ${piuLimitForEntry(representative)}%`,"Soglia 87.5% sotto 3T; 82% a 3T o superiore"],
+      ["PSG","PSG <= 2.5%","Limite ACR usato dal software"],
+      ["SNR","SNR >= 90% della misura precedente della stessa sequenza","Se manca uno storico precedente: non valutabile"],
+      ["SNRU","SNRU >= 90%","Valutazione su 5 ROI"],
+      ["T2","T2 >= 90% del T2 precedente della sessione","Calcolato solo da due sequenze Spin Echo con TE diversi; se manca il precedente: non valutabile"],
+    ];
+    let html=`<div class="report-card"><h3>Criteri PASS/FAIL applicati</h3><table class="result-table" style="width:100%;font-size:12px"><thead><tr><th>Parametro</th><th>Criterio PASS</th><th>Nota</th></tr></thead><tbody>`;
+    rows.forEach(r=>{html+=`<tr><td style="font-weight:700">${r[0]}</td><td>${r[1]}</td><td>${r[2]}</td></tr>`;});
+    html+=`</tbody></table></div>`;
+    return html;
+  }
+
+  function latestDistinctSequences(entries,limit=3){
+    const bySeq=new Map();
+    (entries||[]).forEach(e=>{
+      const key=sequenceKey(e);
+      if(bySeq.has(key)) bySeq.delete(key);
+      bySeq.set(key,e);
+    });
+    return Array.from(bySeq.values()).slice(-limit);
+  }
+
+  function trendContainerId(prefix,metricIndex,seqIndex){
+    return `${prefix}-${metricIndex}-${seqIndex}`;
+  }
+
+  function renderSplitTrend(container,hist,sequenceEntries,opts={}){
+    if(!container) return;
+    const sequences=(sequenceEntries||[]).slice(0,3);
+    if(!hist?.length||!sequences.length){
+      container.innerHTML=`<div class="report-card"><h3>Trend</h3><p style="font-size:11px;color:var(--text-muted)">Salva almeno una misura per ogni sequenza.</p></div>`;
+      return;
+    }
+    const prefix=opts.prefix||"trend";
+    let h=`<div class="report-card"><h3>${opts.title||"Trend per sequenza"}</h3>`;
+    aggregateMetrics.forEach((mt,mi)=>{
+      if(mt.mod==="t2"){
+        const t2Hist=t2TrendEntries(hist);
+        if(!t2Hist.length) return;
+        h+=`<div class="trend-parameter"><h4>${mt.label}</h4><div class="trend-single-panel"><div id="${trendContainerId(prefix,mi,0)}"></div></div></div>`;
+        return;
+      }
+      const hasData=sequences.some(seq=>historyForSequence(hist,seq).some(e=>metricValue(e.results,mt.mod,mt.key)!=null));
+      if(!hasData) return;
+      h+=`<div class="trend-parameter"><h4>${mt.label}</h4><div class="trend-sequence-grid">`;
+      sequences.forEach((seq,si)=>{
+        h+=`<div class="trend-sequence-panel"><div id="${trendContainerId(prefix,mi,si)}"></div></div>`;
+      });
+      h+=`</div></div>`;
+    });
+    h+=`</div>`;
+    container.innerHTML=h;
+
+    aggregateMetrics.forEach((mt,mi)=>{
+      if(mt.mod==="t2"){
+        const t2Hist=t2TrendEntries(hist);
+        const el=document.getElementById(trendContainerId(prefix,mi,0));
+        if(!el||!t2Hist.length) return;
+        SvgChart.line(el,{
+          labels:t2Hist.map(e=>acquisitionDate(e)||"?"),
+          datasets:[{label:mt.label,data:t2Hist.map(e=>metricValue(e.results,mt.mod,mt.key)),color:"#3b82f6"}],
+          title:"T2 - combinazione sequenze Spin Echo",
+          limits:mt.lim,
+          height:210
+        });
+        return;
+      }
+      sequences.forEach((seq,si)=>{
+        const seqHist=historyForSequence(hist,seq);
+        const data=seqHist.map(e=>metricValue(e.results,mt.mod,mt.key));
+        if(data.every(v=>v==null)) return;
+        const el=document.getElementById(trendContainerId(prefix,mi,si));
+        if(!el) return;
+        SvgChart.line(el,{
+          labels:seqHist.map(e=>acquisitionDate(e)||"?"),
+          datasets:[{label:mt.label,data,color:"#3b82f6"}],
+          title:sequenceTitle(seq,si),
+          limits:mt.lim,
+          height:210
+        });
+      });
+    });
+  }
+
   async function setupTotalReport(){
     const c=document.getElementById("report-container");
     const tc=document.getElementById("trend-container");
     const date=document.getElementById("info-date")?.value||new Date().toISOString().slice(0,10);
-    try{await saveCurrentAcquisition(true);}catch(e){}
+    try{if(AppState.multiThumbnails?.length)await saveSessionAcquisition(true);else await saveCurrentAcquisition(true);}catch(e){}
     let hist=[];
-    try{hist=(await API.getHistory()).history||[];}catch(e){}
+    let sessions=[];
+    try{
+      const historyResp=await API.getHistory();
+      hist=historyResp.history||[];
+      sessions=historyResp.sessions||[];
+    }catch(e){}
     const entries=sameDayEntries(hist,date);
     if(entries.length===0){
       c.innerHTML=`<div class="report-card"><h3>Report CQ totale</h3><p style="font-size:14px;color:var(--text-muted)">Nessuna acquisizione salvata per ${date}.</p></div>`;
-      if(tc) tc.innerHTML="";
+      await loadTrend();
       return;
     }
-    const shown=entries.slice(-3);
+    const shown=latestDistinctSequences(entries,3);
+    const session=sessions.find(s=>s.date===date);
+    const sequenceCount=session?.sequence_count ?? shown.length;
     const first=shown[0]||{};
     const m=first.meta||AppState.dicomMeta||{};
     let h=`<div class="report-card"><h3>Report CQ totale - ${date}</h3><div class="report-grid">
-      <div class="report-metric"><span class="label">Acquisizioni nel report</span><span class="value">${shown.length}/3</span></div>
+      <div class="report-metric"><span class="label">Sequenze sessione</span><span class="value">${sequenceCount}/3</span></div>
       <div class="report-metric"><span class="label">Sede</span><span class="value">${m.institution||first.control_info?.presidio||"-"}</span></div>
       <div class="report-metric"><span class="label">Scanner</span><span class="value">${((m.manufacturer||"")+" "+(m.model||"")).trim()||"-"}</span></div>
       <div class="report-metric"><span class="label">Campo</span><span class="value">${m.magnetic_field_T||"-"} T</span></div>
-    </div>${shown.length<3?`<p style="font-size:12px;color:var(--text-muted);margin-top:10px">Attenzione: trovate ${shown.length} acquisizioni salvate per questa data; il CQ totale atteso ne usa 3.</p>`:""}</div>`;
+    </div>${sequenceCount<3?`<p style="font-size:12px;color:var(--text-muted);margin-top:10px">Attenzione: trovate ${sequenceCount} sequenze salvate per questa data; una sessione CQ completa ne richiede almeno 3.</p>`:""}</div>`;
 
-    const metrics=[
-      {label:"Distorsione %",mod:"geometric",key:"distortion_percent",dec:3,unit:" %",passMod:"geometric"},
-      {label:"PIU %",mod:"piu",key:"piu_percent",dec:2,unit:" %",passMod:"piu"},
-      {label:"PSG %",mod:"psg",key:"psg_percent",dec:4,unit:" %",passMod:"psg"},
-      {label:"SNR",mod:"snr",key:"snr",dec:2,unit:"",passMod:null},
-      {label:"SNRU %",mod:"snru",key:"snru_percent",dec:2,unit:" %",passMod:"snru"},
-      {label:"T2 ms",mod:"t2",key:"t2_ms",dec:2,unit:" ms",passMod:null}
-    ];
+    h+=renderPassFailCriteriaCard(shown,hist);
+
     h+=`<div class="report-card"><h3>Riepilogo tre acquisizioni</h3><table class="result-table" style="width:100%;font-size:13px"><thead><tr><th>Parametro</th>`;
     shown.forEach((e,i)=>{h+=`<th>${resultLabel(e,i)}</th>`;});
-    h+=`<th>Media</th><th>Range</th><th>Esito</th></tr></thead><tbody>`;
-    metrics.forEach(mt=>{
+    h+=`</tr></thead><tbody>`;
+    aggregateMetrics.forEach(mt=>{
+      if(mt.mod==="t2"){
+        const t2Entry=t2EntryForSession(entries);
+        const t2Val=metricValue(t2Entry?.results,mt.mod,mt.key);
+        const pass=t2Entry?metricSequencePass(mt,t2Entry,hist):null;
+        h+=`<tr><td style="padding:8px;font-weight:600">${mt.label}</td><td class="${pass===true?'pass':pass===false?'fail':''}" colspan="${shown.length}" style="padding:8px"><span class="value">${fmtMetric(t2Val,mt.dec,mt.unit)}</span><br><span style="font-size:11px;font-weight:700">Misura unica della sessione - ${passText(pass)}</span></td></tr>`;
+        return;
+      }
       const vals=shown.map(e=>metricValue(e.results,mt.mod,mt.key));
-      const nums=vals.filter(v=>v!=null);
-      const avg=nums.length?nums.reduce((a,b)=>a+b,0)/nums.length:null;
-      const range=nums.length?Math.max(...nums)-Math.min(...nums):null;
-      const passes=mt.passMod?shown.map(e=>metricPass(e.results,mt.passMod)).filter(v=>v!=null):[];
-      const failed=passes.some(v=>v===false);
-      const passed=passes.length&&passes.every(v=>v===true);
+      const passes=shown.map(e=>metricSequencePass(mt,e,hist));
       h+=`<tr><td style="padding:8px;font-weight:600">${mt.label}</td>`;
-      vals.forEach(v=>{h+=`<td class="value" style="padding:8px">${fmtMetric(v,mt.dec,mt.unit)}</td>`;});
-      h+=`<td class="value" style="padding:8px">${fmtMetric(avg,mt.dec,mt.unit)}</td><td class="value" style="padding:8px">${fmtMetric(range,mt.dec,mt.unit)}</td>`;
-      h+=`<td class="${failed?'fail':passed?'pass':''}" style="padding:8px;font-weight:700">${failed?'FAIL':passed?'PASS':'-'}</td></tr>`;
+      vals.forEach((v,i)=>{
+        const pass=passes[i];
+        h+=`<td class="${pass===true?'pass':pass===false?'fail':''}" style="padding:8px"><span class="value">${fmtMetric(v,mt.dec,mt.unit)}</span><br><span style="font-size:11px;font-weight:700">${passText(pass)}</span></td>`;
+      });
+      h+=`</tr>`;
     });
     h+=`</tbody></table></div>`;
 
-    h+=`<div class="report-card"><h3>Dettaglio acquisizioni salvate</h3><div class="report-grid">`;
-    shown.forEach((e,i)=>{
-      const em=e.meta||{};
-      h+=`<div class="report-metric"><span class="label">${resultLabel(e,i)}</span><span class="value">${em.study_date||e.study_date||"-"}</span><span class="label">${em.series_description||em.protocol||"-"}</span></div>`;
-    });
+    h+=`<div class="report-card"><h3>Minuta protocollo acquisizione</h3><div class="report-grid protocol-grid">`;
+    shown.forEach((e,i)=>{h+=protocolMinute(e,i);});
     h+=`</div></div>`;
     c.innerHTML=h;
-    if(tc) tc.innerHTML="";
-    document.title=`CQ_totale_${date.replace(/-/g,"")}`;
+    renderSplitTrend(tc,hist,shown,{title:"Trend parametri per sequenza",prefix:"total-trend"});
+    const site=filenamePart(m.institution||first.control_info?.presidio,"Presidio");
+    const machine=filenamePart([m.manufacturer,m.model].filter(Boolean).join("_"),"Macchina");
+    document.title=`CQ_totale_${site}_${machine}_${date.replace(/-/g,"")}`;
   }
 
   async function setupStep5(){
+    if(AppState.multiThumbnails?.length){
+      await setupTotalReport();
+      return;
+    }
     const c=document.getElementById("report-container"),R=AppState.results,m=AppState.dicomMeta||{};
 
     // Load history for SNR/T2 trend comparison
@@ -616,24 +1016,27 @@
 
     let h=`<div class="report-card"><h3>QC ${AppState.phantomType==="acr"?"ACR":"Sfera"} — ${m.institution||document.getElementById("info-presidio")?.value||""} — ${m.magnetic_field_T||"?"} T — ${(m.manufacturer||"")+" "+(m.model||"")}</h3><div class="report-grid"><div class="report-metric"><span class="label">Data Analisi</span><span class="value">${document.getElementById("info-date")?.value||"—"}</span></div><div class="report-metric"><span class="label">Data Acquisizione</span><span class="value">${m.study_date?m.study_date.substring(6,8)+"/"+m.study_date.substring(4,6)+"/"+m.study_date.substring(0,4):"—"}</span></div><div class="report-metric"><span class="label">Scanner</span><span class="value">${(m.manufacturer||"")+" "+(m.model||"")}</span></div><div class="report-metric"><span class="label">Sede</span><span class="value">${m.institution||document.getElementById("info-presidio")?.value||"—"}</span></div><div class="report-metric"><span class="label">Campo</span><span class="value">${m.magnetic_field_T||"—"} T</span></div><div class="report-metric"><span class="label">Protocollo</span><span class="value">${m.protocol||"—"}</span></div><div class="report-metric"><span class="label">Operatori</span><span class="value">${document.getElementById("info-operatori")?.value||"—"}</span></div></div></div>`;
 
+    h+=renderPassFailCriteriaCard([{results:R,meta:m}],[]);
+
     // Summary table — ALL parameters
     const P=[
-      {l:"Distorsione Geometrica",mod:"geometric",k:"distortion_percent",u:"%",lim:"≤ 2%",gp:r=>r?.passed},
-      {l:"Uniformità (PIU)",mod:"piu",k:"piu_percent",u:"%",lim:"≥ 87.5%",gp:r=>r?.passed},
-      {l:"Ghosting (PSG)",mod:"psg",k:"psg_percent",u:"%",lim:"≤ 2.5%",gp:r=>r?.passed},
+      {l:"Distorsione Geometrica",mod:"geometric",k:"distortion_percent",u:"%",lim:"<= 2% e errore <= 2 mm",gp:r=>r?.passed},
+      {l:"Uniformità (PIU)",mod:"piu",k:"piu_percent",u:"%",lim:()=>`>= ${R.piu?.limit||piuLimitForEntry({results:R,meta:m})}%`,gp:r=>r?.passed},
+      {l:"Ghosting (PSG)",mod:"psg",k:"psg_percent",u:"%",lim:"<= 2.5%",gp:r=>r?.passed},
       {l:"SNR",mod:"snr",k:"snr",u:"",lim:prevSnr!=null?`prev: ${prevSnr.toFixed(1)}`:"— (trend)",gp:r=>snrPass(r)},
-      {l:"Uniformità SNR (SNRU)",mod:"snru",k:"snru_percent",u:"%",lim:"≥ 90%",gp:r=>r?.passed},
+      {l:"Uniformità SNR (SNRU)",mod:"snru",k:"snru_percent",u:"%",lim:">= 90%",gp:r=>r?.passed},
       {l:"T2",mod:"t2",k:"t2_ms",u:"ms",lim:prevT2!=null?`prev: ${prevT2.toFixed(1)}`:"— (trend)",gp:r=>t2Pass(r)},
     ];
     h+=`<div class="report-card"><h3>Riepilogo Risultati</h3>`;
-    if(prevSnr!=null||prevT2!=null) h+=`<p style="font-size:11px;color:var(--text-secondary);margin-bottom:8px">SNR e T2 valutati rispetto alla misura precedente (FAIL se calo &gt; 10%)</p>`;
+    if(prevSnr!=null||prevT2!=null) h+=`<p style="font-size:11px;color:var(--text-secondary);margin-bottom:8px">SNR e T2 valutati rispetto alla misura precedente: PASS se il valore resta almeno al 90% del precedente.</p>`;
     h+=`<table class="result-table" style="width:100%;font-size:14px"><thead><tr><th style="padding:8px">Parametro</th><th style="padding:8px">Valore</th><th style="padding:8px">Riferimento</th><th style="padding:8px">Esito</th></tr></thead><tbody>`;
     P.forEach(p=>{
       const r=R[p.mod],v=r?r[p.k]:null,pa=p.gp(r);
       const valStr=v!=null?(typeof v==='number'?v.toFixed(2):v)+" "+p.u:"— (non analizzato)";
+      const refStr=typeof p.lim==="function"?p.lim(r):p.lim;
       const cls=pa===true?'pass':pa===false?'fail':'';
       const esitoStr=pa===true?"✓ PASS":pa===false?"✗ FAIL":"—";
-      h+=`<tr><td style="padding:8px;font-weight:500">${p.l}</td><td class="value" style="padding:8px;font-size:15px">${valStr}</td><td style="padding:8px">${p.lim}</td><td class="${cls}" style="padding:8px;font-size:14px;font-weight:700">${esitoStr}</td></tr>`;
+      h+=`<tr><td style="padding:8px;font-weight:500">${p.l}</td><td class="value" style="padding:8px;font-size:15px">${valStr}</td><td style="padding:8px">${refStr}</td><td class="${cls}" style="padding:8px;font-size:14px;font-weight:700">${esitoStr}</td></tr>`;
     });
     h+=`</tbody></table></div>`;
 
@@ -745,17 +1148,36 @@
     const tc=document.getElementById("trend-container");
     try{const resp=await API.getHistory();const hist=resp.history||[];
       if(hist.length<2){tc.innerHTML=`<div class="report-card"><h3>Trend</h3><p style="font-size:11px;color:var(--text-muted)">Salva almeno 2 misure per il trend.</p></div>`;return;}
-      const labels=hist.map(e=>e.date||"?");
-      const charts=[{t:"Distorsione %",k:r=>r?.geometric?.distortion_percent,lim:[{value:2,label:"2%",color:"#ef4444"}]},{t:"PIU %",k:r=>r?.piu?.piu_percent,lim:[{value:87.5,label:"87.5%",color:"#22c55e"}]},{t:"PSG %",k:r=>r?.psg?.psg_percent,lim:[{value:2.5,label:"2.5%",color:"#ef4444"}]},{t:"SNR",k:r=>r?.snr?.snr,lim:[]},{t:"SNRU %",k:r=>r?.snru?.snru_percent,lim:[{value:90,label:"90%",color:"#22c55e"}]},{t:"T2 ms",k:r=>r?.t2?.t2_ms,lim:[]}];
-      let h=`<div class="report-card"><h3>Trend (${hist.length})</h3>`;
-      charts.forEach(ch=>{const d=hist.map(e=>ch.k(e.results));if(d.every(v=>v==null))return;h+=`<div id="ch-${ch.t.replace(/\W/g,'')}" style="margin-bottom:10px"></div>`;});
-      h+=`</div>`;tc.innerHTML=h;
-      charts.forEach(ch=>{const d=hist.map(e=>ch.k(e.results));if(d.every(v=>v==null))return;const el=document.getElementById(`ch-${ch.t.replace(/\W/g,'')}`);if(el)SvgChart.line(el,{labels,datasets:[{label:ch.t,data:d,color:"#3b82f6"}],title:ch.t,limits:ch.lim});});
+      const byKey=new Map();
+      sortedHistory(hist).forEach(e=>byKey.set(sequenceKey(e),e));
+      const sequences=Array.from(byKey.values()).slice(-3);
+      renderSplitTrend(tc,hist,sequences,{title:`Trend per sequenza (${hist.length})`,prefix:"trend"});
     }catch(e){tc.innerHTML=`<div class="report-card"><h3>Trend</h3><p style="color:var(--text-muted)">Errore</p></div>`;}
+  }
+
+  async function printCompactReport(){
+    const report=document.getElementById("report-container");
+    if(!report?.innerHTML.trim()){
+      if(AppState.multiThumbnails?.length) await setupTotalReport();
+      else await setupStep5();
+    }
+    UI.showStep(5);
+    document.body.classList.add("print-compact-report");
+    UI.setStatus("Preparazione stampa compatta...");
+    const cleanup=()=>{
+      document.body.classList.remove("print-compact-report");
+      UI.setStatus("Pronto");
+      window.removeEventListener("afterprint",cleanup);
+    };
+    window.addEventListener("afterprint",cleanup);
+    setTimeout(()=>{
+      window.print();
+      setTimeout(cleanup,1200);
+    },150);
   }
 
   document.getElementById("btn-save-history")?.addEventListener("click",async()=>{try{await saveCurrentAcquisition(false);loadTrend();}catch(e){UI.setStatus(`Err: ${e.message}`);}});
   document.getElementById("btn-total-report")?.addEventListener("click",async()=>{await setupTotalReport();UI.showStep(5);});
-  document.getElementById("btn-print")?.addEventListener("click",()=>window.print());
+  document.getElementById("btn-print")?.addEventListener("click",printCompactReport);
 
 })();

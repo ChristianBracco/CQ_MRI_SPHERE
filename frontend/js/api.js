@@ -27,19 +27,33 @@ const API = {
     if (ww != null && ww !== 0) url += `&ww=${ww}`;
     return this.get(url);
   },
+  getSequenceSliceImage(uid, idx, wl, ww, size) {
+    let url = `/slice-image/${idx}?size=${size||0}&uid=${encodeURIComponent(uid)}`;
+    if (wl != null && wl !== 0) url += `&wl=${wl}`;
+    if (ww != null && ww !== 0) url += `&ww=${ww}`;
+    return this.get(url);
+  },
   getThumbnails(wl, ww, size=128) {
     let url = `/slice-thumbnails?size=${size}`;
     if (wl != null && wl !== 0) url += `&wl=${wl}`;
     if (ww != null && ww !== 0) url += `&ww=${ww}`;
     return this.get(url);
   },
+  getMultiThumbnails(wl, ww, size=128) {
+    let url = `/multi-slice-thumbnails?size=${size}`;
+    if (wl != null && wl !== 0) url += `&wl=${wl}`;
+    if (ww != null && ww !== 0) url += `&ww=${ww}`;
+    return this.get(url);
+  },
   getDicomMeta() { return this.get("/dicom-meta"); },
   analyze(module, sliceIdx, kwargs) { return this.post("/analyze", { module, slice_idx: sliceIdx, kwargs: kwargs||null }); },
+  analyzeSequence(uid, module, sliceIdx, kwargs) { return this.post("/analyze-sequence", { uid, module, slice_idx: sliceIdx, kwargs: kwargs||null }); },
   analyzeT2(idxTe1, idxTe2) { return this.post("/analyze-t2", { slice_idx_te1: idxTe1, slice_idx_te2: idxTe2 }); },
   analyzeT2Auto(sliceIdx) { return this.post("/analyze-t2-auto", { slice_idx: sliceIdx }); },
   analyzeAll(sliceIdx) { return this.post(`/analyze-all?slice_idx=${sliceIdx}`, {}); },
+  analyzeAllSequences(selections, snrMethod="single_lr") { return this.post("/analyze-all-sequences", { selections, snr_method: snrMethod }); },
   setMetaInfo(info) { return this.post("/meta-info", info); },
-  saveHistory(entry) { return this.post("/save-history", entry); },
+  saveHistory(entry, overwrite=false) { return this.post("/save-history", { ...entry, overwrite }); },
   getHistory() { return this.get("/history"); },
   browseFs(path="") { return this.get(`/browse-fs?path=${encodeURIComponent(path)}`); },
 };

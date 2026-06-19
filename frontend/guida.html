@@ -49,6 +49,58 @@ ol,ul{padding-left:20px;margin:6px 0}li{margin:4px 0;font-size:0.88rem}
 </ol>
 <div class="note">Per il calcolo del <b>T2</b>, occorrono almeno due serie acquisite con TE diversi (es. TE=20ms e TE=80ms). Il software le rileva automaticamente.</div>
 
+<h2>Formule implementate nel software</h2>
+<div class="card">
+<p>Questa sezione riporta le formule effettivamente usate dal codice. Le coordinate sono espresse come <code>[riga, colonna]</code>; le distanze fisiche usano il <code>PixelSpacing</code> DICOM.</p>
+
+<h3>Geometria</h3>
+<div class="formula">D_mean = (D_0 + D_90 + D_45 + D_135) / 4</div>
+<div class="formula">Distorsione (%) = 100 * (D_max - D_min) / D_mean</div>
+<div class="formula">Errore_max (mm) = max(|D_i - D_nominale|)</div>
+<p>Se il diametro nominale non è impostato, il software usa <code>D_nominale = D_mean</code> e quindi <code>Errore_max = (D_max - D_min) / 2</code>. Il PASS richiede distorsione <= 2% ed errore massimo <= 2 mm.</p>
+
+<h3>ROI comuni</h3>
+<div class="formula">r_UFOV = 0.75 * r_phantom</div>
+<div class="formula">Area ROI 1 cm² = 100 mm²; r_ROI = sqrt(100 / pi) / PixelSpacing</div>
+<div class="formula">Area ROI background 10 cm² = 1000 mm²</div>
+<p>Il centro e il raggio del phantom sono stimati automaticamente dalla sezione circolare del phantom. La UFOV è ridotta al 75% del raggio per evitare contributi dal bordo.</p>
+
+<h3>PIU - Percent Image Uniformity</h3>
+<div class="formula">I_smooth = immagine convoluta con maschera circolare da 1 cm²</div>
+<div class="formula">PIU (%) = 100 * [1 - (S_max - S_min) / (S_max + S_min)]</div>
+<p><code>S_max</code> e <code>S_min</code> sono massimo e minimo di <code>I_smooth</code> dentro la UFOV. Il limite è 87.5% sotto 3T e 82% a 3T o più.</p>
+
+<h3>PSG - Percent Signal Ghosting</h3>
+<div class="formula">S_signal = media nella ROI circolare centrale, r = 0.75 * r_phantom</div>
+<div class="formula">PSG (%) = 100 * |((S_up + S_down) - (S_left + S_right)) / (2 * S_signal)|</div>
+<p>Le quattro ROI di background hanno area circa 10 cm² e sono poste sopra, sotto, a sinistra e a destra del phantom, a distanza pari al 10% del raggio. Il PASS richiede PSG <= 2.5%.</p>
+
+<h3>SNR - Signal-to-Noise Ratio</h3>
+<div class="formula">SNR = 0.665 * S_signal / sigma_background</div>
+<div class="formula">sigma_background = mean(sigma_ROI_background)</div>
+<p><code>S_signal</code> è la media nella UFOV. Il fattore 0.665 corregge la stima del rumore nelle immagini di magnitudine. Metodi disponibili:</p>
+<table>
+<tr><th>Metodo</th><th>Formula di sigma_background</th></tr>
+<tr><td>LR</td><td>mean(sigma_left, sigma_right)</td></tr>
+<tr><td>4 Angoli</td><td>mean(sigma_TL, sigma_TR, sigma_BL, sigma_BR), ROI 20x20 px</td></tr>
+<tr><td>4 BG</td><td>mean(sigma_up, sigma_down, sigma_left, sigma_right), ROI stile PSG</td></tr>
+</table>
+<p>Il SNR non ha un limite assoluto nel report: viene seguito come trend temporale.</p>
+
+<h3>SNRU - Uniformità del SNR</h3>
+<div class="formula">SNR_i = 0.665 * mean_signal_i / sigma_background</div>
+<div class="formula">SNRU (%) = 100 * [1 - (SNR_max - SNR_min) / (SNR_max + SNR_min)]</div>
+<p>Si usano 5 ROI circolari da 1 cm²: centro, alto, basso, sinistra, destra. Le quattro ROI periferiche sono a distanza <code>0.6 * r_phantom</code> dal centro. Nel codice <code>sigma_background</code> è stimata da una ROI esterna sul lato destro del phantom. Il PASS richiede SNRU >= 90%.</p>
+
+<h3>T2</h3>
+<div class="formula">S(TE) = S0 * exp(-TE / T2)</div>
+<div class="formula">T2 = (TE2 - TE1) / ln(S1 / S2)</div>
+<p><code>S1</code> e <code>S2</code> sono le medie nella stessa ROI circolare, con raggio <code>0.6 * r_phantom</code>, sulle due acquisizioni usate. Il calcolo richiede <code>TE2 > TE1</code> e <code>S1 > S2 > 0</code>. Quando sono disponibili più TE, il software usa le due acquisizioni con TE minimo e TE massimo.</p>
+
+<h3>Valutazioni di trend</h3>
+<p>Per SNR e T2 il report compatto usa il confronto con la misura precedente: PASS se il valore resta almeno al 90% del precedente; FAIL se scende sotto il 90%. Se non esiste una misura precedente, l'esito non viene assegnato.</p>
+</div>
+
 <h2>3. Protocollo di Acquisizione Raccomandato</h2>
 <div class="card">
 <h3>Setup phantom</h3>
@@ -63,9 +115,9 @@ ol,ul{padding-left:20px;margin:6px 0}li{margin:4px 0;font-size:0.88rem}
 <p>Esempio pratico testato su GE Optima MR450w 1.5T — protocollo "AAALLASIA ENCEFALO1":</p>
 <table>
 <tr><th>#</th><th>Sequenza 2D</th><th>TR [ms]</th><th>TE [ms]</th><th>Flip</th><th>FOV [mm]</th><th>Matrix</th><th>Number of Average</th><th>Slice [mm]</th><th>Scopo</th></tr>
-<tr><td>1</td><td><b>AX T2* GRE</b></td><td>500</td><td>15</td><td>60</td><td>270</td><td>256×160</td><td>1</td><td>5</td><td>Geometria, PIU, PSG, SNR, SNRU + T2 (TE₁)</td></tr>
-<tr><td>2</td><td><b>T1 SE</b></td><td>500</td><td>30</td><td>90</td><td>270</td><td>256×160</td><td>1</td><td>5</td><td>T2 (TE₂ — lungo)</td></tr>
-<tr><td>3</td><td><b>T1 SE</b></td><td>500</td><td>100</td><td>90</td><td>270</td><td>256×160</td><td>1</td><td>5</td><td>T2 (TE intermedio, opzionale)</td></tr>
+<tr><td>1</td><td><b>AX T2* GRE</b></td><td>500</td><td>15</td><td>60</td><td>270</td><td>256×160</td><td>1</td><td>5</td><td>Geometria, PIU, PSG, SNR, SNRU</td></tr>
+<tr><td>2</td><td><b>T1 SE</b></td><td>500</td><td>30</td><td>90</td><td>270</td><td>256×160</td><td>1</td><td>5</td><td>T2 Spin Echo (TE corto)</td></tr>
+<tr><td>3</td><td><b>T1 SE</b></td><td>500</td><td>100</td><td>90</td><td>270</td><td>256×160</td><td>1</td><td>5</td><td>T2 Spin Echo (TE lungo)</td></tr>
 </table>
 
 <h3>Parametri chiave</h3>

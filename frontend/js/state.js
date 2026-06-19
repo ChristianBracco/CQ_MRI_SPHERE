@@ -8,11 +8,16 @@ const AppState = {
   phantomType: "sphere", // "sphere" or "acr"
   slices: [],
   thumbnails: [],
+  multiThumbnails: [],
   selectedSliceIdx: -1,
+  selectedSlicesBySequence: {},
+  activeAnalysisSequenceUid: "",
   selectedT2SliceIdx: -1, // second slice for T2
   sequences: [],
   activeSequenceUid: "",
   results: {},
+  resultsBySequence: {},
+  sessionT2: null,
   metaInfo: {},
   dicomMeta: null,
   history: [],
@@ -38,9 +43,14 @@ const AppState = {
   reset() {
     this.slices = [];
     this.thumbnails = [];
+    this.multiThumbnails = [];
     this.selectedSliceIdx = -1;
+    this.selectedSlicesBySequence = {};
+    this.activeAnalysisSequenceUid = "";
     this.selectedT2SliceIdx = -1;
     this.results = {};
+    this.resultsBySequence = {};
+    this.sessionT2 = null;
     this.dicomMeta = null;
     this.sequences = [];
   },

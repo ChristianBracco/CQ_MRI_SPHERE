@@ -20,6 +20,9 @@ const SvgChart = (() => {
     datasets.forEach(ds => {
       ds.data.forEach(v => { if (v != null) { yMin = Math.min(yMin, v); yMax = Math.max(yMax, v); } });
     });
+    (opts.limits || []).forEach(lim => {
+      if (lim.value != null) { yMin = Math.min(yMin, lim.value); yMax = Math.max(yMax, lim.value); }
+    });
     if (!isFinite(yMin)) { yMin = 0; yMax = 1; }
     const yPad = (yMax - yMin) * 0.1 || 1;
     yMin -= yPad; yMax += yPad;
