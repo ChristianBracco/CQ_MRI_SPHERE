@@ -47,6 +47,9 @@ BACKEND_DIR = str(Path(__file__).parent)
 if BACKEND_DIR not in sys.path:
     sys.path.insert(0, BACKEND_DIR)
 
+SERVER_DATA_DIR = Path(os.environ.get("SPHERE_QC_DATA_DIR") or PROJECT_ROOT).resolve()
+HISTORY_FILE = SERVER_DATA_DIR / "qc_history.json"
+
 from dicom_loader import DicomSlice, load_dicom_series, get_series_stats
 from sphere_analysis import (
     find_phantom_circle, calculate_geometric_accuracy,
@@ -96,18 +99,17 @@ class AppState:
 
 state = AppState()
 
-def _history_files() -> List[Path]:
-    files = [Path(PROJECT_ROOT) / "qc_history.json"]
-    if state.input_dir:
-        local_file = Path(state.input_dir) / "qc_history.json"
-        if local_file not in files:
-            files.append(local_file)
+def _history_read_files() -> List[Path]:
+    files = [HISTORY_FILE]
+    legacy_project_file = Path(PROJECT_ROOT) / "qc_history.json"
+    if legacy_project_file != HISTORY_FILE:
+        files.append(legacy_project_file)
     return files
 
 def _load_history_entries() -> List[dict]:
     entries: List[dict] = []
     seen = set()
-    for history_file in _history_files():
+    for history_file in _history_read_files():
         if not history_file.exists():
             continue
         try:
@@ -115,22 +117,97 @@ def _load_history_entries() -> List[dict]:
         except Exception:
             continue
         for item in data:
-            key = item.get("acquisition_id") or _json.dumps(item, sort_keys=True, cls=_NumpyEncoder)
+            key = _history_identity(item)
             if key in seen:
                 continue
             seen.add(key)
             entries.append(item)
     return entries
 
+def _entry_date(entry: dict) -> str:
+    return entry.get("analysis_date") or entry.get("date") or entry.get("study_date") or ""
+
+def _sequence_key(entry: dict) -> str:
+    meta = entry.get("meta") or {}
+    return entry.get("active_sequence_uid") or "|".join([
+        str(meta.get("series_instance_uid") or ""),
+        str(meta.get("series_description") or meta.get("protocol") or ""),
+        str(meta.get("tr_ms") or ""),
+        str(meta.get("te_ms") or ""),
+    ])
+
+def _scanner_key(entry: dict) -> str:
+    meta = entry.get("meta") or {}
+    control = entry.get("control_info") or {}
+    return "|".join([
+        str(meta.get("institution") or control.get("presidio") or ""),
+        str(meta.get("manufacturer") or ""),
+        str(meta.get("model") or meta.get("model_name") or ""),
+        str(meta.get("station") or meta.get("station_name") or ""),
+        str(meta.get("magnetic_field_T") or ""),
+    ])
+
+def _history_identity(entry: dict) -> str:
+    date = _entry_date(entry)
+    seq = _sequence_key(entry)
+    scanner = _scanner_key(entry)
+    if date and seq:
+        return f"{date}|{scanner}|{seq}"
+    return entry.get("acquisition_id") or _json.dumps(entry, sort_keys=True, cls=_NumpyEncoder)
+
+def _session_summary(entries: List[dict]) -> List[dict]:
+    sessions: Dict[str, dict] = {}
+    for entry in entries:
+        date = _entry_date(entry)
+        if not date:
+            continue
+        session = sessions.setdefault(date, {
+            "date": date,
+            "entries": 0,
+            "sequence_count": 0,
+            "complete": False,
+            "sequences": {},
+        })
+        session["entries"] += 1
+        key = _sequence_key(entry)
+        if key:
+            meta = entry.get("meta") or {}
+            session["sequences"][key] = {
+                "uid": entry.get("active_sequence_uid") or meta.get("series_instance_uid") or "",
+                "description": meta.get("series_description") or meta.get("protocol") or "",
+                "tr_ms": meta.get("tr_ms"),
+                "te_ms": meta.get("te_ms"),
+            }
+    output = []
+    for session in sessions.values():
+        sequences = list(session["sequences"].values())
+        output.append({
+            "date": session["date"],
+            "entries": session["entries"],
+            "sequence_count": len(sequences),
+            "complete": len(sequences) >= 3,
+            "sequences": sequences,
+        })
+    return sorted(output, key=lambda item: item["date"])
+
 def _upsert_history_entry(entries: List[dict], entry_data: dict) -> List[dict]:
-    entry_id = entry_data.get("acquisition_id") or ""
-    if entry_id:
-        for idx, item in enumerate(entries):
-            if item.get("acquisition_id") == entry_id:
-                entries[idx] = entry_data
-                return entries
+    entry_key = _history_identity(entry_data)
+    for idx, item in enumerate(entries):
+        if _history_identity(item) == entry_key:
+            entries[idx] = entry_data
+            return entries
     entries.append(entry_data)
     return entries
+
+def _dedupe_history_entries(entries: List[dict]) -> List[dict]:
+    deduped: List[dict] = []
+    for item in entries:
+        deduped = _upsert_history_entry(deduped, item)
+    return deduped
+
+def _persist_history_entries(entries: List[dict]) -> None:
+    HISTORY_FILE.parent.mkdir(parents=True, exist_ok=True)
+    HISTORY_FILE.write_text(_json.dumps(entries, indent=2, cls=_NumpyEncoder), encoding="utf-8")
 
 # ==============================================================================
 # PYDANTIC MODELS
@@ -148,6 +225,16 @@ class T2Request(BaseModel):
     slice_idx_te1: int
     slice_idx_te2: int
 
+class SequenceAnalyzeRequest(BaseModel):
+    uid: str
+    module: str
+    slice_idx: int = 0
+    kwargs: Optional[dict] = None
+
+class MultiSequenceAnalyzeRequest(BaseModel):
+    selections: Dict[str, int] = Field(default_factory=dict)
+    snr_method: str = "single_lr"
+
 class MetaInfoRequest(BaseModel):
     data_controllo: str = ""
     tipo_controllo: str = "Costanza"
@@ -159,12 +246,14 @@ class MetaInfoRequest(BaseModel):
 class HistoryEntry(BaseModel):
     date: str
     results: dict
+    raw_metrics: dict = Field(default_factory=dict)
     acquisition_id: str = ""
     saved_at: str = ""
     analysis_date: str = ""
     study_date: str = ""
     meta: dict = Field(default_factory=dict)
     control_info: dict = Field(default_factory=dict)
+    overwrite: bool = False
 
     model_config = {"extra": "allow"}
 
@@ -199,6 +288,215 @@ def _slice_summary(sl: DicomSlice, idx: int) -> dict:
         "instance": sl.instance_number,
         "te_ms": sl.te_ms, "tr_ms": sl.tr_ms,
     }
+
+def _series_groups() -> Dict[str, List[DicomSlice]]:
+    groups: Dict[str, List[DicomSlice]] = {}
+    for sl in state.all_slices:
+        groups.setdefault(sl.series_instance_uid or "unknown", []).append(sl)
+    return groups
+
+def _series_meta(uid: str, slices: List[DicomSlice]) -> dict:
+    rep = slices[0]
+    return {
+        "uid": uid, "description": rep.series_description,
+        "tr_ms": rep.tr_ms, "te_ms": rep.te_ms,
+        "n_slices": len(slices), "is_active": uid == state.active_sequence_uid,
+    }
+
+def _sequence_text(sl: DicomSlice) -> str:
+    return f"{sl.series_description or ''} {sl.protocol_name or ''}".upper()
+
+def _token_text(text: str) -> str:
+    return " " + "".join(ch if ch.isalnum() else " " for ch in text.upper()) + " "
+
+def _is_spin_echo_text(text: str) -> bool:
+    text = text.upper()
+    tokens = _token_text(text)
+    gradient_echo_markers = [
+        " GRE ", " GR ", " SPGR ", " FFE ", " TFE ", " FLASH ", " FISP ",
+        " SSFP ", " DESS ", " EPI ", " T2STAR ", " T2 STAR ",
+    ]
+    if "T2*" in text or any(marker in tokens for marker in gradient_echo_markers):
+        return False
+    spin_echo_markers = [" SE ", " FSE ", " TSE ", " CSE ", " SPIN ECHO "]
+    return any(marker in tokens for marker in spin_echo_markers) or "SPIN ECHO" in text
+
+def _is_spin_echo_sequence(sl: DicomSlice) -> bool:
+    return _is_spin_echo_text(_sequence_text(sl))
+
+def _invalidate_non_spin_echo_t2(entry: dict) -> dict:
+    results = entry.get("results") if isinstance(entry, dict) else None
+    t2 = results.get("t2") if isinstance(results, dict) else None
+    if not isinstance(t2, dict) or t2.get("error"):
+        return entry
+
+    desc1 = str(t2.get("series1_description") or "")
+    desc2 = str(t2.get("series2_description") or "")
+    if not desc1 or not desc2 or (_is_spin_echo_text(desc1) and _is_spin_echo_text(desc2)):
+        return entry
+
+    updated = dict(entry)
+    updated_results = dict(results)
+    invalid_t2 = dict(t2)
+    invalid_t2["invalidated_t2_ms"] = invalid_t2.pop("t2_ms", None)
+    invalid_t2["error"] = "T2 invalidato: il calcolo richiede due sequenze Spin Echo con TE diversi"
+    updated_results["t2"] = invalid_t2
+    updated["results"] = updated_results
+    raw = dict(updated.get("raw_metrics") or {})
+    raw.pop("t2", None)
+    updated["raw_metrics"] = raw
+    return updated
+
+def _t2_spin_echo_series(groups: Dict[str, List[DicomSlice]]) -> List[tuple]:
+    series_te = []
+    for uid, slices in groups.items():
+        if not slices:
+            continue
+        rep = slices[0]
+        if rep.te_ms > 0 and _is_spin_echo_sequence(rep):
+            series_te.append((uid, rep.te_ms, slices))
+    return sorted(series_te, key=lambda item: item[1])
+
+def _copy_keys(src: dict, keys: List[str]) -> dict:
+    return {key: src[key] for key in keys if key in src}
+
+def _module_raw_metrics(module: str, result: dict) -> dict:
+    if not isinstance(result, dict) or result.get("error"):
+        return {}
+
+    common = _copy_keys(result, [
+        "center_rc", "radius_px", "ufov_radius_px", "roi_radius_px", "mask_radius_px",
+    ])
+
+    if module == "geometric":
+        return {
+            **common,
+            "diameters_mm": {
+                "horizontal": result.get("diameter_horizontal_mm"),
+                "vertical": result.get("diameter_vertical_mm"),
+                "oblique_45": result.get("diameter_45_mm"),
+                "oblique_135": result.get("diameter_135_mm"),
+            },
+            **_copy_keys(result, [
+                "diameter_mean_mm", "diameter_max_mm", "diameter_min_mm",
+                "nominal_diameter_mm", "max_error_mm", "line_coords",
+            ]),
+        }
+
+    if module == "piu":
+        return {
+            **common,
+            **_copy_keys(result, [
+                "s_max", "s_min", "max_position_rc", "min_position_rc", "field_T",
+            ]),
+        }
+
+    if module == "psg":
+        return {
+            **common,
+            "background_means": {
+                "up": result.get("s_up"),
+                "down": result.get("s_down"),
+                "left": result.get("s_left"),
+                "right": result.get("s_right"),
+            },
+            **_copy_keys(result, ["signal_mean", "rois"]),
+        }
+
+    if module == "snr":
+        return {
+            **common,
+            **_copy_keys(result, [
+                "signal_mean", "noise_std_left", "noise_std_right",
+                "noise_std_mean", "method", "bg_rois",
+            ]),
+        }
+
+    if module == "snru":
+        return {
+            **common,
+            **_copy_keys(result, [
+                "noise_std", "snr_max", "snr_min", "rois",
+            ]),
+        }
+
+    if module == "t2":
+        return {
+            **common,
+            **_copy_keys(result, [
+                "s1_mean", "s2_mean", "te1_ms", "te2_ms",
+                "ratio_s1_s2", "series1_description", "series2_description",
+            ]),
+        }
+
+    return {}
+
+def _extract_raw_metrics(results: dict) -> dict:
+    if not isinstance(results, dict):
+        return {}
+
+    raw = {}
+    for module, result in results.items():
+        module_raw = _module_raw_metrics(module, result)
+        if module_raw:
+            raw[module] = module_raw
+    return raw
+
+def _with_raw_metrics(entry: dict) -> dict:
+    if not isinstance(entry, dict):
+        return entry
+    entry = _invalidate_non_spin_echo_t2(entry)
+
+    computed = _extract_raw_metrics(entry.get("results") or {})
+    if not computed:
+        return entry
+
+    existing = entry.get("raw_metrics") if isinstance(entry.get("raw_metrics"), dict) else {}
+    merged = {**existing, **computed}
+    if merged == existing:
+        return entry
+
+    updated = dict(entry)
+    updated["raw_metrics"] = merged
+    return updated
+
+@app.on_event("startup")
+async def migrate_history_raw_metrics():
+    try:
+        entries = _load_history_entries()
+        if not entries:
+            return
+        hydrated = [_with_raw_metrics(item) for item in entries]
+        if hydrated != entries:
+            _persist_history_entries(_dedupe_history_entries(hydrated))
+            logger.info("History raw_metrics migration completed for %d entries", len(hydrated))
+    except Exception as e:
+        logger.warning("Could not migrate history raw_metrics: %s", e)
+
+def _analyze_slice_modules(sl: DicomSlice, snr_method: str = "single_lr") -> dict:
+    arr = sl.pixel_array
+    ps = sl.pixel_spacing_mm
+    results = {}
+    for module in ["geometric", "piu", "psg", "snr", "snru"]:
+        try:
+            if module == "geometric":
+                results[module] = calculate_geometric_accuracy(arr, ps)
+            elif module == "piu":
+                r = calculate_piu(arr, ps)
+                field_T = sl.magnetic_field_T or 1.5
+                r["limit"] = 87.5 if field_T < 3.0 else 82.0
+                r["passed"] = r["piu_percent"] >= r["limit"]
+                r["field_T"] = field_T
+                results[module] = r
+            elif module == "psg":
+                results[module] = calculate_psg(arr, ps)
+            elif module == "snr":
+                results[module] = calculate_snr(arr, ps, snr_method=snr_method)
+            elif module == "snru":
+                results[module] = calculate_snru(arr, ps)
+        except Exception as e:
+            results[module] = {"error": str(e)}
+    return results
 
 # ==============================================================================
 # ENDPOINTS
@@ -249,24 +547,14 @@ async def load_dicom(req: LoadRequest):
         state.all_slices = all_loaded
 
         # Group by series UID
-        groups: Dict[str, List[DicomSlice]] = {}
-        for sl in all_loaded:
-            uid = sl.series_instance_uid or "unknown"
-            groups.setdefault(uid, []).append(sl)
+        groups = _series_groups()
 
         # Select first sequence
         selected_uid = max(groups.keys(), key=lambda u: len(groups[u]))
         state.active_sequence_uid = selected_uid
         state.slices = groups.get(selected_uid, all_loaded)
 
-        sequences_info = []
-        for uid, grp in groups.items():
-            rep = grp[0]
-            sequences_info.append({
-                "uid": uid, "description": rep.series_description,
-                "tr_ms": rep.tr_ms, "te_ms": rep.te_ms,
-                "n_slices": len(grp), "is_active": uid == selected_uid,
-            })
+        sequences_info = [_series_meta(uid, grp) for uid, grp in groups.items()]
 
         return NumpyJSONResponse({
             "success": True, "n_slices": len(state.slices),
@@ -284,9 +572,7 @@ class SetActiveSequenceRequest(BaseModel):
 
 @app.post("/set-active-sequence")
 async def set_active_sequence(req: SetActiveSequenceRequest):
-    groups: Dict[str, List[DicomSlice]] = {}
-    for sl in state.all_slices:
-        groups.setdefault(sl.series_instance_uid or "unknown", []).append(sl)
+    groups = _series_groups()
     if req.uid not in groups:
         raise HTTPException(400, f"Sequenza '{req.uid}' non trovata")
     state.active_sequence_uid = req.uid
@@ -304,10 +590,13 @@ async def get_slices():
             "slices": [_slice_summary(sl, i) for i, sl in enumerate(state.slices)]}
 
 @app.get("/slice-image/{idx}")
-async def get_slice_image(idx: int, wl: float = Query(None), ww: float = Query(None), size: int = Query(0)):
-    if not state.slices or idx < 0 or idx >= len(state.slices):
+async def get_slice_image(idx: int, wl: float = Query(None), ww: float = Query(None), size: int = Query(0), uid: str = Query("")):
+    slices = state.slices
+    if uid:
+        slices = _series_groups().get(uid, [])
+    if not slices or idx < 0 or idx >= len(slices):
         raise HTTPException(400, f"Indice slice non valido: {idx}")
-    sl = state.slices[idx]
+    sl = slices[idx]
     b64 = _slice_to_base64(sl.pixel_array, wl, ww, size)
     return {"idx": idx, "image": b64}
 
@@ -321,6 +610,23 @@ async def get_thumbnails(wl: float = Query(None), ww: float = Query(None), size:
         thumbs.append({"idx": i, "image": b64, "z": round(sl.slice_location, 2),
                        "te_ms": sl.te_ms, "tr_ms": sl.tr_ms})
     return {"thumbnails": thumbs}
+
+@app.get("/multi-slice-thumbnails")
+async def get_multi_thumbnails(wl: float = Query(None), ww: float = Query(None), size: int = Query(128)):
+    if not state.all_slices:
+        raise HTTPException(400, "Nessuna serie caricata")
+    groups = _series_groups()
+    thumbs = []
+    for uid, slices in groups.items():
+        for i, sl in enumerate(slices):
+            b64 = _slice_to_base64(sl.pixel_array, wl, ww, size)
+            thumbs.append({
+                "uid": uid, "idx": i, "image": b64,
+                "z": round(sl.slice_location, 2),
+                "te_ms": sl.te_ms, "tr_ms": sl.tr_ms,
+                "description": sl.series_description,
+            })
+    return {"sequences": [_series_meta(uid, grp) for uid, grp in groups.items()], "thumbnails": thumbs}
 
 @app.get("/dicom-meta")
 async def get_dicom_meta():
@@ -382,6 +688,24 @@ async def analyze_module(req: AnalyzeRequest):
         traceback.print_exc()
         raise HTTPException(500, f"Errore analisi {module}: {e}")
 
+@app.post("/analyze-sequence")
+async def analyze_sequence_module(req: SequenceAnalyzeRequest):
+    groups = _series_groups()
+    if req.uid not in groups:
+        raise HTTPException(400, f"Sequenza '{req.uid}' non trovata")
+    slices = groups[req.uid]
+    if req.slice_idx < 0 or req.slice_idx >= len(slices):
+        raise HTTPException(400, f"Slice index {req.slice_idx} non valido")
+    previous_slices = state.slices
+    previous_uid = state.active_sequence_uid
+    state.slices = slices
+    state.active_sequence_uid = req.uid
+    try:
+        return await analyze_module(AnalyzeRequest(module=req.module, slice_idx=req.slice_idx, kwargs=req.kwargs))
+    finally:
+        state.slices = previous_slices
+        state.active_sequence_uid = previous_uid
+
 @app.post("/analyze-t2")
 async def analyze_t2(req: T2Request):
     if not state.slices:
@@ -393,6 +717,9 @@ async def analyze_t2(req: T2Request):
 
     sl1 = state.all_slices[req.slice_idx_te1]
     sl2 = state.all_slices[req.slice_idx_te2]
+
+    if not (_is_spin_echo_sequence(sl1) and _is_spin_echo_sequence(sl2)):
+        raise HTTPException(400, "Il T2 va calcolato solo da due sequenze Spin Echo con TE diversi")
 
     if sl1.te_ms == sl2.te_ms:
         raise HTTPException(400, "Le due slice devono avere TE diversi")
@@ -423,14 +750,11 @@ async def analyze_t2_auto(req: T2AutoRequest):
         uid = sl.series_instance_uid or "unknown"
         groups.setdefault(uid, []).append(sl)
 
-    # Find at least 2 series with different TE
-    series_te = []
-    for uid, slices in groups.items():
-        if slices and slices[0].te_ms > 0:
-            series_te.append((uid, slices[0].te_ms, slices))
+    # Find at least 2 Spin Echo series with different TE
+    series_te = _t2_spin_echo_series(groups)
 
     if len(series_te) < 2:
-        raise HTTPException(400, "Servono almeno 2 serie con TE diversi per il calcolo T2")
+        raise HTTPException(400, "Servono almeno 2 serie Spin Echo con TE diversi per il calcolo T2")
 
     # Sort by TE
     series_te.sort(key=lambda x: x[1])
@@ -439,7 +763,7 @@ async def analyze_t2_auto(req: T2AutoRequest):
     te_values = [x[1] for x in series_te]
     unique_te = list(set(te_values))
     if len(unique_te) < 2:
-        raise HTTPException(400, f"Tutte le serie hanno lo stesso TE ({unique_te[0]} ms)")
+        raise HTTPException(400, f"Le serie Spin Echo hanno tutte lo stesso TE ({unique_te[0]} ms)")
 
     # Pick the two with smallest and largest TE
     s1_uid, te1, slices1 = series_te[0]
@@ -490,6 +814,49 @@ async def analyze_all(slice_idx: int = Query(0)):
     state.results = results
     return NumpyJSONResponse({"success": True, "results": results})
 
+@app.post("/analyze-all-sequences")
+async def analyze_all_sequences(req: MultiSequenceAnalyzeRequest):
+    if not state.all_slices:
+        raise HTTPException(400, "Nessuna serie caricata")
+    groups = _series_groups()
+    results_by_sequence = {}
+    for uid, slices in groups.items():
+        idx = req.selections.get(uid, len(slices) // 2)
+        if idx < 0 or idx >= len(slices):
+            idx = len(slices) // 2
+        sl = slices[idx]
+        results_by_sequence[uid] = {
+            "uid": uid,
+            "slice_idx": idx,
+            "meta": _series_meta(uid, slices),
+            "results": _analyze_slice_modules(sl, req.snr_method),
+        }
+
+    t2_result = None
+    try:
+        series_te = _t2_spin_echo_series(groups)
+        if len({x[1] for x in series_te}) >= 2:
+            uid1, _te1, slices1 = series_te[0]
+            uid2, _te2, slices2 = series_te[-1]
+            idx1 = min(req.selections.get(uid1, len(slices1)//2), len(slices1)-1)
+            idx2 = min(req.selections.get(uid2, len(slices2)//2), len(slices2)-1)
+            sl1, sl2 = slices1[idx1], slices2[idx2]
+            if sl1.te_ms > sl2.te_ms:
+                sl1, sl2 = sl2, sl1
+            t2_result = calculate_t2(sl1.pixel_array, sl2.pixel_array, sl1.te_ms, sl2.te_ms, sl1.pixel_spacing_mm)
+            t2_result["series1_description"] = sl1.series_description
+            t2_result["series2_description"] = sl2.series_description
+        else:
+            t2_result = {"error": "T2 non calcolato: servono almeno 2 sequenze Spin Echo con TE diversi"}
+    except Exception as e:
+        t2_result = {"error": str(e)}
+
+    return NumpyJSONResponse({
+        "success": True,
+        "results_by_sequence": results_by_sequence,
+        "t2": t2_result,
+    })
+
 @app.post("/meta-info")
 async def set_meta_info(req: MetaInfoRequest):
     state.meta_info = req.model_dump()
@@ -498,24 +865,45 @@ async def set_meta_info(req: MetaInfoRequest):
 @app.post("/save-history")
 async def save_history(entry: HistoryEntry):
     entry_data = entry.model_dump()
+    overwrite = bool(entry_data.pop("overwrite", False))
+    entry_data["session_date"] = _entry_date(entry_data)
+    entry_data = _with_raw_metrics(entry_data)
+
+    existing_entries = _load_history_entries()
+    duplicate = next((item for item in existing_entries if _history_identity(item) == _history_identity(entry_data)), None)
+    if duplicate and not overwrite:
+        return {
+            "success": False,
+            "duplicate": True,
+            "message": "Analisi già presente nello storico. Confermare sovrascrittura.",
+            "history_file": str(HISTORY_FILE),
+            "existing": {
+                "date": _entry_date(duplicate),
+                "sequence": _sequence_key(duplicate),
+                "saved_at": duplicate.get("saved_at", ""),
+            },
+        }
+
     state.history = _upsert_history_entry(state.history, entry_data)
 
-    # Persist to the app-level DB so multiple acquisition folders can be aggregated.
+    # Persist only to the server/app data directory so QC history is not tied to DICOM folders.
     try:
-        existing = _upsert_history_entry(_load_history_entries(), entry_data)
-        for history_file in _history_files():
-            history_file.parent.mkdir(parents=True, exist_ok=True)
-            history_file.write_text(_json.dumps(existing, indent=2, cls=_NumpyEncoder), encoding="utf-8")
+        existing = _dedupe_history_entries(_upsert_history_entry(existing_entries, entry_data))
+        _persist_history_entries(existing)
     except Exception as e:
         logger.warning("Could not save history: %s", e)
-    return {"success": True, "total_entries": len(state.history)}
+    return {
+        "success": True,
+        "history_file": str(HISTORY_FILE),
+        "total_entries": len(_load_history_entries()),
+    }
 
 @app.get("/history")
 async def get_history():
     data = _load_history_entries()
     if data:
-        return {"history": data}
-    return {"history": state.history}
+        return {"history": data, "sessions": _session_summary(data), "history_file": str(HISTORY_FILE)}
+    return {"history": state.history, "sessions": _session_summary(state.history), "history_file": str(HISTORY_FILE)}
 
 # ==============================================================================
 # OVERLAY GENERATION
