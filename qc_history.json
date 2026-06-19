@@ -977,7 +977,7 @@
     "control_info": {}
   },
   {
-    "date": "2026-06-17",
+    "date": "2026-06-19",
     "results": {
       "geometric": {
         "diameter_horizontal_mm": 132.63,
@@ -1062,9 +1062,9 @@
         "mask_radius_px": 6
       },
       "psg": {
-        "psg_percent": 0.1021,
+        "psg_percent": 0.0779,
         "signal_mean": 511.19,
-        "s_right": 8.13,
+        "s_right": 7.88,
         "s_left": 7.6,
         "s_up": 7.07,
         "s_down": 7.61,
@@ -1105,10 +1105,10 @@
             ]
           },
           "right": {
-            "mean": 8.128491401672363,
+            "mean": 7.881564140319824,
             "rect": [
               52,
-              202,
+              229,
               179,
               5
             ]
@@ -1228,8 +1228,8 @@
       }
     },
     "acquisition_id": "C:\\Users\\cbracco\\Downloads\\controllorivoli|1.2.840.113619.2.410.4722639.4348421.14232.1713506889.406|20240419|T1 SE|AAALLASIA ENCEFALO1|100|500|0",
-    "saved_at": "2026-06-17T13:48:14.097Z",
-    "analysis_date": "2026-06-17",
+    "saved_at": "2026-06-19T08:30:35.763Z",
+    "analysis_date": "2026-06-19",
     "study_date": "2024-04-19",
     "meta": {
       "manufacturer": "GE MEDICAL SYSTEMS",
@@ -1250,7 +1250,7 @@
       "n_averages": 2
     },
     "control_info": {
-      "data_controllo": "2026-06-17",
+      "data_controllo": "2026-06-19",
       "tipo_controllo": "Costanza",
       "presidio": "Rivoli",
       "sala": "Risonanza",
