@@ -5,6 +5,7 @@ Apre automaticamente il browser.
 """
 import os
 import sys
+import socket
 import webbrowser
 import threading
 
@@ -35,6 +36,18 @@ HOST = "127.0.0.1"
 PORT = 8182
 URL = f"http://{HOST}:{PORT}/frontend/"
 
+def find_free_port(host: str, preferred: int, attempts: int = 20) -> int:
+    """Return preferred port if available, otherwise the next free local port."""
+    for port in range(preferred, preferred + attempts):
+        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
+            sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+            try:
+                sock.bind((host, port))
+                return port
+            except OSError:
+                continue
+    raise RuntimeError(f"Nessuna porta libera trovata da {preferred} a {preferred + attempts - 1}")
+
 
 def open_browser():
     """Open browser after a short delay to let server start."""
@@ -44,6 +57,11 @@ def open_browser():
 
 
 def main():
+    global PORT, URL
+    preferred_port = PORT
+    PORT = find_free_port(HOST, preferred_port)
+    URL = f"http://{HOST}:{PORT}/frontend/"
+
     print()
     print("=" * 50)
     print("  MRI QC Sphere / ACR Analyzer")
@@ -53,6 +71,8 @@ def main():
     print(f"  Server: http://{HOST}:{PORT}")
     print(f"  Frontend: {URL}")
     print(f"  Base dir: {BASE_DIR}")
+    if PORT != preferred_port:
+        print(f"  Nota: porta {preferred_port} occupata, uso {PORT}.")
     print()
     print("  Premi Ctrl+C per chiudere.")
     print("=" * 50)
