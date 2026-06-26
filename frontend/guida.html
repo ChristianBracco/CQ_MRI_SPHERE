@@ -136,7 +136,7 @@ ol,ul{padding-left:20px;margin:6px 0}li{margin:4px 0;font-size:0.88rem}
 <li>Servono almeno <b>2 serie con stesso TR e TE diversi</b></li>
 <li>Idealmente: TE₁ corto (15-20 ms) e TE₂ lungo (80-100 ms)</li>
 <li>Stessa slice, stesso FOV, stessa matrix</li>
-<li>Il software rileva automaticamente le serie con TE diversi e calcola T2</li>
+<li>Il software usa solo le serie Spin Echo con TE diversi per calcolare T2</li>
 </ul>
 
 <div class="note"><b>Nota</b>: se si dispone di 3+ TE diversi, il software userà le due con TE più distanti (minimo e massimo) per massimizzare la sensibilità nel calcolo T2.</div>
@@ -240,16 +240,58 @@ ol,ul{padding-left:20px;margin:6px 0}li{margin:4px 0;font-size:0.88rem}
 <div class="formula">T2 = (TE₂ − TE₁) / ln(S₁ / S₂)</div>
 <h3>Requisiti</h3>
 <ul>
-<li>Due serie T2-pesate con <b>stesso TR</b> e <b>TE diversi</b></li>
+<li>Due serie <b>Spin Echo</b> con <b>stesso TR</b> e <b>TE diversi</b></li>
 <li>Stessa posizione slice (stessa z)</li>
 <li>S₁ > S₂ (il segnale deve decadere con TE crescente)</li>
 </ul>
 <h3>Note pratiche</h3>
-<div class="note">Il software rileva automaticamente le serie con TE diversi. Se disponibili, il bottone "T2 Auto" effettua il calcolo senza intervento dell'operatore. In alternativa, è possibile selezionare manualmente con Shift+Click.</div>
+<div class="note">Il software usa solo sequenze Spin Echo per il T2. Le sequenze GRE/T2* sono escluse dal calcolo anche se hanno TE diverso.</div>
 <p class="ref">Ref: Bloembergen, Purcell & Pound 1948; Haacke et al., "Magnetic Resonance Imaging", Ch. 4</p>
 </div>
 
-<h2>10. Riferimenti Bibliografici</h2>
+<h2>10. Report CQ Totale</h2>
+<div class="card">
+<h3>Obiettivo</h3>
+<p>Il <b>Report CQ Totale</b> costruisce il riepilogo giornaliero aggregando le acquisizioni salvate nello storico centrale per la data di controllo selezionata. Il report serve per documentare la sessione CQ completa, normalmente composta da tre sequenze.</p>
+
+<h3>Flusso operativo</h3>
+<ol>
+<li>Caricare la cartella DICOM della sessione.</li>
+<li>Selezionare una slice rappresentativa per ciascuna sequenza caricata.</li>
+<li>Compilare le informazioni del controllo: presidio, sala, operatori, data e note.</li>
+<li>Eseguire l'analisi, preferibilmente con <b>Tutti</b>.</li>
+<li>Il software salva le acquisizioni nello storico centrale e aggiorna il report.</li>
+<li>Premere <b>Report CQ totale</b> dalla toolbar per visualizzare o stampare il report compatto.</li>
+</ol>
+
+<h3>Dati salvati nello storico</h3>
+<p>Ogni acquisizione salvata contiene:</p>
+<ul>
+<li>data del controllo e data acquisizione DICOM;</li>
+<li>risultati delle analisi e dati grezzi/intermedi usati nei calcoli;</li>
+<li>metadati DICOM della sequenza;</li>
+<li>informazioni inserite dall'utente;</li>
+<li>serie attiva, slice selezionata e identificativo dell'acquisizione.</li>
+</ul>
+<div class="formula">qc_history.json</div>
+<p>Il file dello storico viene scritto nella cartella in cui vive il server/applicazione, non nella cartella DICOM. In questo modo le informazioni non vengono perse se i DICOM vengono spostati o rimossi.</p>
+
+<h3>Anti-duplicazione</h3>
+<p>Prima del salvataggio, il software confronta data, scanner e sequenza. Se l'analisi della stessa acquisizione risulta già presente nello storico, l'applicazione impedisce il doppio inserimento e chiede se sovrascrivere il dato esistente.</p>
+
+<h3>Contenuto del report</h3>
+<ul>
+<li>intestazione con presidio, scanner controllato e data;</li>
+<li>criteri PASS/FAIL applicati;</li>
+<li>riepilogo delle tre acquisizioni, con esito per parametro e sequenza;</li>
+<li>minuta del protocollo di acquisizione per ciascuna sequenza;</li>
+<li>trend per singolo parametro e sequenza;</li>
+<li>un solo plot T2, perché il T2 è una misura unica di sessione calcolata da due sequenze Spin Echo.</li>
+</ul>
+<div class="note">Il report non riporta media e range aggregati: per il controllo quotidiano vengono mostrati i valori per sequenza, i criteri PASS/FAIL e i trend.</div>
+</div>
+
+<h2>11. Riferimenti Bibliografici</h2>
 <div class="card">
 <ol style="font-size:0.82rem;line-height:1.8">
 <li>ACR, "MRI Quality Control Manual", American College of Radiology, 2015</li>
@@ -264,7 +306,7 @@ ol,ul{padding-left:20px;margin:6px 0}li{margin:4px 0;font-size:0.88rem}
 </ol>
 </div>
 
-<h2>11. Glossario</h2>
+<h2>12. Glossario</h2>
 <div class="card">
 <table>
 <tr><th>Acronimo</th><th>Significato</th></tr>

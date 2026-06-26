@@ -427,8 +427,8 @@
       ${AppState.selectedT2SliceIdx>=0?`<p style="font-size:11px;color:var(--accent-purple)">T2 manuale: slice #${AppState.selectedSliceIdx} vs #${AppState.selectedT2SliceIdx}</p>`:`<p style="font-size:11px;color:var(--text-muted)">Per T2 manuale: torna allo Step 2 e Shift+Click su una slice di altra serie.</p>`}
       ${r&&r.series1_description?`<p style="font-size:11px;color:var(--text-secondary);margin-top:6px">Usate: ${r.series1_description} (TE=${r.te1_ms}) vs ${r.series2_description} (TE=${r.te2_ms})</p>`:''}
     </div><div class="module-results-panel">
-      ${r?`<div class="result-section"><h4 style="font-size:16px">T2${r.t2_ms!=null?' = <span style="font-size:20px;color:var(--accent-cyan)">'+r.t2_ms+'</span> ms':' — errore'}</h4><table class="result-table" style="font-size:13px">
-        <tr><td>TE₁</td><td class="value">${r.te1_ms} ms</td></tr><tr><td>TE₂</td><td class="value">${r.te2_ms} ms</td></tr>
+      ${r?`<div class="result-section"><h4 style="font-size:16px">T2${r.t2_ms!=null?' = <span style="font-size:20px;color:var(--accent-cyan)">'+r.t2_ms+'</span> ms':' — <span style="color:var(--accent-red)">errore</span>'}</h4>${r.error?'<p style="font-size:12px;color:var(--accent-red);margin:6px 0;line-height:1.4">'+r.error+'</p>':''}<table class="result-table" style="font-size:13px">
+        <tr><td>TE₁</td><td class="value">${r.te1_ms||'–'} ms</td></tr><tr><td>TE₂</td><td class="value">${r.te2_ms||'–'} ms</td></tr>
         <tr><td>S₁ (TE₁)</td><td class="value">${UI.fmt(r.s1_mean)}</td></tr><tr><td>S₂ (TE₂)</td><td class="value">${UI.fmt(r.s2_mean)}</td></tr>
         <tr><td>S₁/S₂</td><td class="value">${UI.fmt(r.ratio_s1_s2,4)}</td></tr>
         <tr><td>Formula</td><td style="font-family:var(--font-mono);font-size:10px">T2 = (TE₂−TE₁) / ln(S₁/S₂)</td></tr></table></div>`:'<p style="color:var(--text-muted);font-size:13px">Premi ▶ T2 Auto per calcolare</p>'}
