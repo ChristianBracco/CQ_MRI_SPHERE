@@ -641,9 +641,18 @@ def calculate_t2(arr_te1: np.ndarray, arr_te2: np.ndarray,
     s2 = float(np.mean(arr_te2[roi_mask]))
 
     if s1 <= 0 or s2 <= 0 or s2 >= s1:
+        if s2 > s1:
+            reason = (
+                f"Il segnale a TE₂={te2_ms} ms (S₂={s2:.1f}) è maggiore del segnale "
+                f"a TE₁={te1_ms} ms (S₁={s1:.1f}). "
+                "Questo indica che le due serie hanno TR diversi: "
+                "il calcolo T2 richiede due serie con lo stesso TR."
+            )
+        else:
+            reason = "Segnali non validi per calcolo T2 (S1 deve essere > S2 > 0)"
         return {
             "t2_ms": None,
-            "error": "Segnali non validi per calcolo T2 (S1 deve essere > S2 > 0)",
+            "error": reason,
             "s1_mean": round(s1, 2),
             "s2_mean": round(s2, 2),
             "te1_ms": te1_ms,

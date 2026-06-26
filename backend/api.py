@@ -724,6 +724,27 @@ async def analyze_t2(req: T2Request):
     if sl1.te_ms == sl2.te_ms:
         raise HTTPException(400, "Le due slice devono avere TE diversi")
 
+    # Verifica TR compatibili (tolleranza 10%)
+    if sl1.tr_ms > 0 and sl2.tr_ms > 0:
+        tr_diff = abs(sl1.tr_ms - sl2.tr_ms)
+        tr_mean = (sl1.tr_ms + sl2.tr_ms) / 2.0
+        if tr_diff / tr_mean > 0.10:
+            result = {
+                "t2_ms": None,
+                "error": (
+                    f"TR incompatibili: serie 1 TR={sl1.tr_ms:.0f} ms (TE={sl1.te_ms:.0f} ms), "
+                    f"serie 2 TR={sl2.tr_ms:.0f} ms (TE={sl2.te_ms:.0f} ms). "
+                    f"Il calcolo T2 richiede due serie Spin Echo con lo stesso TR e TE diversi."
+                ),
+                "te1_ms": sl1.te_ms,
+                "te2_ms": sl2.te_ms,
+                "s1_mean": None,
+                "s2_mean": None,
+                "ratio_s1_s2": None,
+            }
+            state.results["t2"] = result
+            return NumpyJSONResponse({"success": True, "module": "t2", "results": result})
+
     # Ensure te1 < te2
     if sl1.te_ms > sl2.te_ms:
         sl1, sl2 = sl2, sl1
@@ -768,6 +789,31 @@ async def analyze_t2_auto(req: T2AutoRequest):
     # Pick the two with smallest and largest TE
     s1_uid, te1, slices1 = series_te[0]
     s2_uid, te2, slices2 = series_te[-1]
+
+    # Verifica TR compatibili (tolleranza 10%)
+    tr1 = slices1[0].tr_ms if slices1 else 0
+    tr2 = slices2[0].tr_ms if slices2 else 0
+    if tr1 > 0 and tr2 > 0:
+        tr_diff = abs(tr1 - tr2)
+        tr_mean = (tr1 + tr2) / 2.0
+        if tr_diff / tr_mean > 0.10:
+            result = {
+                "t2_ms": None,
+                "error": (
+                    f"TR incompatibili: la serie con TE={te1:.0f} ms ha TR={tr1:.0f} ms, "
+                    f"quella con TE={te2:.0f} ms ha TR={tr2:.0f} ms. "
+                    f"Il calcolo T2 richiede due serie Spin Echo con lo stesso TR e TE diversi."
+                ),
+                "te1_ms": te1,
+                "te2_ms": te2,
+                "s1_mean": None,
+                "s2_mean": None,
+                "ratio_s1_s2": None,
+                "series1_description": slices1[0].series_description if slices1 else "",
+                "series2_description": slices2[0].series_description if slices2 else "",
+            }
+            state.results["t2"] = result
+            return NumpyJSONResponse({"success": True, "module": "t2", "results": result})
 
     # Get the slice at the requested index (clamped)
     idx1 = min(req.slice_idx, len(slices1) - 1)
@@ -838,14 +884,39 @@ async def analyze_all_sequences(req: MultiSequenceAnalyzeRequest):
         if len({x[1] for x in series_te}) >= 2:
             uid1, _te1, slices1 = series_te[0]
             uid2, _te2, slices2 = series_te[-1]
-            idx1 = min(req.selections.get(uid1, len(slices1)//2), len(slices1)-1)
-            idx2 = min(req.selections.get(uid2, len(slices2)//2), len(slices2)-1)
-            sl1, sl2 = slices1[idx1], slices2[idx2]
-            if sl1.te_ms > sl2.te_ms:
-                sl1, sl2 = sl2, sl1
-            t2_result = calculate_t2(sl1.pixel_array, sl2.pixel_array, sl1.te_ms, sl2.te_ms, sl1.pixel_spacing_mm)
-            t2_result["series1_description"] = sl1.series_description
-            t2_result["series2_description"] = sl2.series_description
+            # Verifica TR compatibili
+            tr1 = slices1[0].tr_ms if slices1 else 0
+            tr2 = slices2[0].tr_ms if slices2 else 0
+            tr_mismatch = False
+            if tr1 > 0 and tr2 > 0:
+                tr_diff = abs(tr1 - tr2)
+                tr_mean = (tr1 + tr2) / 2.0
+                if tr_diff / tr_mean > 0.10:
+                    t2_result = {
+                        "t2_ms": None,
+                        "error": (
+                            f"TR incompatibili: la serie con TE={_te1:.0f} ms ha TR={tr1:.0f} ms, "
+                            f"quella con TE={_te2:.0f} ms ha TR={tr2:.0f} ms. "
+                            f"Il calcolo T2 richiede due serie Spin Echo con lo stesso TR e TE diversi."
+                        ),
+                        "te1_ms": _te1,
+                        "te2_ms": _te2,
+                        "s1_mean": None,
+                        "s2_mean": None,
+                        "ratio_s1_s2": None,
+                        "series1_description": slices1[0].series_description if slices1 else "",
+                        "series2_description": slices2[0].series_description if slices2 else "",
+                    }
+                    tr_mismatch = True
+            if not tr_mismatch:
+                idx1 = min(req.selections.get(uid1, len(slices1)//2), len(slices1)-1)
+                idx2 = min(req.selections.get(uid2, len(slices2)//2), len(slices2)-1)
+                sl1, sl2 = slices1[idx1], slices2[idx2]
+                if sl1.te_ms > sl2.te_ms:
+                    sl1, sl2 = sl2, sl1
+                t2_result = calculate_t2(sl1.pixel_array, sl2.pixel_array, sl1.te_ms, sl2.te_ms, sl1.pixel_spacing_mm)
+                t2_result["series1_description"] = sl1.series_description
+                t2_result["series2_description"] = sl2.series_description
         else:
             t2_result = {"error": "T2 non calcolato: servono almeno 2 sequenze Spin Echo con TE diversi"}
     except Exception as e:
