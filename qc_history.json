@@ -1,18 +1,18 @@
 [
   {
-    "date": "2026-06-17",
+    "date": "2026-06-19",
     "results": {
       "geometric": {
-        "diameter_horizontal_mm": 131.74,
-        "diameter_vertical_mm": 131.96,
-        "diameter_45_mm": 131.15,
-        "diameter_135_mm": 130.48,
-        "diameter_mean_mm": 131.33,
-        "diameter_max_mm": 131.96,
-        "diameter_min_mm": 130.48,
-        "distortion_percent": 1.126,
-        "max_error_mm": 0.74,
-        "nominal_diameter_mm": 131.3,
+        "diameter_horizontal_mm": 132.63,
+        "diameter_vertical_mm": 132.36,
+        "diameter_45_mm": 131.65,
+        "diameter_135_mm": 131.28,
+        "diameter_mean_mm": 131.98,
+        "diameter_max_mm": 132.63,
+        "diameter_min_mm": 131.28,
+        "distortion_percent": 1.019,
+        "max_error_mm": 0.67,
+        "nominal_diameter_mm": 132,
         "passed": true,
         "center_rc": [
           141,
@@ -32,7 +32,7 @@
           },
           "vertical": {
             "start": [
-              79,
+              78,
               132
             ],
             "end": [
@@ -52,27 +52,27 @@
           },
           "oblique_135": {
             "start": [
-              97.9,
-              175.1
+              97.2,
+              175.8
             ],
             "end": [
-              184.8,
-              88.2
+              185.5,
+              87.5
             ]
           }
         }
       },
       "piu": {
-        "piu_percent": 91.48,
-        "s_max": 157.95,
-        "s_min": 133.13,
+        "piu_percent": 97.01,
+        "s_max": 525.36,
+        "s_min": 494.85,
         "max_position_rc": [
-          155,
-          136
+          149,
+          172
         ],
         "min_position_rc": [
-          129,
-          92
+          99,
+          132
         ],
         "passed": true,
         "limit": 87.5,
@@ -84,724 +84,6 @@
         "ufov_radius_px": 48,
         "mask_radius_px": 6,
         "field_T": 1.5
-      },
-      "psg": {
-        "psg_percent": 0.0156,
-        "signal_mean": 146.91,
-        "s_right": 7.04,
-        "s_left": 7.47,
-        "s_up": 7.14,
-        "s_down": 7.32,
-        "passed": true,
-        "limit": 2.5,
-        "center_rc": [
-          141,
-          132
-        ],
-        "radius_px": 64,
-        "ufov_radius_px": 48,
-        "rois": {
-          "up": {
-            "mean": 7.143016815185547,
-            "rect": [
-              6,
-              43,
-              5,
-              179
-            ]
-          },
-          "down": {
-            "mean": 7.32290506362915,
-            "rect": [
-              211,
-              43,
-              5,
-              179
-            ]
-          },
-          "left": {
-            "mean": 7.474860191345215,
-            "rect": [
-              52,
-              6,
-              179,
-              5
-            ]
-          },
-          "right": {
-            "mean": 7.036871433258057,
-            "rect": [
-              52,
-              202,
-              179,
-              5
-            ]
-          }
-        }
-      },
-      "snr": {
-        "snr": 32.26,
-        "signal_mean": 146.91,
-        "noise_std_left": 3.0788,
-        "noise_std_right": 3.1527,
-        "noise_std_mean": 3.0285,
-        "method": "single_4bg",
-        "center_rc": [
-          141,
-          132
-        ],
-        "radius_px": 64,
-        "ufov_radius_px": 48,
-        "bg_rois": {}
-      },
-      "snru": {
-        "snru_percent": 93.19,
-        "snr_max": 31.86,
-        "snr_min": 27.8,
-        "noise_std": 3.2799,
-        "rois": [
-          {
-            "name": "center",
-            "center_rc": [
-              141,
-              132
-            ],
-            "mean_signal": 157.14,
-            "snr": 31.86
-          },
-          {
-            "name": "top",
-            "center_rc": [
-              103,
-              132
-            ],
-            "mean_signal": 147.62,
-            "snr": 29.93
-          },
-          {
-            "name": "bottom",
-            "center_rc": [
-              179,
-              132
-            ],
-            "mean_signal": 154.2,
-            "snr": 31.26
-          },
-          {
-            "name": "left",
-            "center_rc": [
-              141,
-              94
-            ],
-            "mean_signal": 137.1,
-            "snr": 27.8
-          },
-          {
-            "name": "right",
-            "center_rc": [
-              141,
-              170
-            ],
-            "mean_signal": 142.03,
-            "snr": 28.8
-          }
-        ],
-        "passed": true,
-        "limit": 90,
-        "center_rc": [
-          141,
-          132
-        ],
-        "radius_px": 64,
-        "roi_radius_px": 6
-      },
-      "t2": {
-        "t2_ms": 99.6,
-        "s1_mean": 1199.57,
-        "s2_mean": 510.95,
-        "te1_ms": 15,
-        "te2_ms": 100,
-        "ratio_s1_s2": 2.3477,
-        "center_rc": [
-          141,
-          131
-        ],
-        "radius_px": 80,
-        "roi_radius_px": 48,
-        "series1_description": "AX T2* GRE",
-        "series2_description": "T1 SE"
-      }
-    }
-  },
-  {
-    "date": "2026-06-17",
-    "results": {
-      "geometric": {
-        "diameter_horizontal_mm": 132.63,
-        "diameter_vertical_mm": 132.36,
-        "diameter_45_mm": 131.65,
-        "diameter_135_mm": 131.28,
-        "diameter_mean_mm": 131.98,
-        "diameter_max_mm": 132.63,
-        "diameter_min_mm": 131.28,
-        "distortion_percent": 1.019,
-        "max_error_mm": 0.67,
-        "nominal_diameter_mm": 132,
-        "passed": true,
-        "center_rc": [
-          141,
-          132
-        ],
-        "radius_px": 64,
-        "line_coords": {
-          "horizontal": {
-            "start": [
-              141,
-              69
-            ],
-            "end": [
-              141,
-              194
-            ]
-          },
-          "vertical": {
-            "start": [
-              78,
-              132
-            ],
-            "end": [
-              204,
-              132
-            ]
-          },
-          "oblique_45": {
-            "start": [
-              97.2,
-              88.2
-            ],
-            "end": [
-              184.8,
-              175.8
-            ]
-          },
-          "oblique_135": {
-            "start": [
-              97.2,
-              175.8
-            ],
-            "end": [
-              185.5,
-              87.5
-            ]
-          }
-        }
-      },
-      "piu": {
-        "piu_percent": 97.01,
-        "s_max": 525.36,
-        "s_min": 494.85,
-        "max_position_rc": [
-          149,
-          172
-        ],
-        "min_position_rc": [
-          99,
-          132
-        ],
-        "passed": true,
-        "limit": 87.5,
-        "center_rc": [
-          141,
-          132
-        ],
-        "radius_px": 64,
-        "ufov_radius_px": 48,
-        "mask_radius_px": 6
-      },
-      "psg": {
-        "psg_percent": 0.0202,
-        "signal_mean": 511.19,
-        "s_right": 7.29,
-        "s_left": 7.6,
-        "s_up": 7.07,
-        "s_down": 7.61,
-        "passed": true,
-        "limit": 2.5,
-        "center_rc": [
-          141,
-          132
-        ],
-        "radius_px": 64,
-        "ufov_radius_px": 48,
-        "rois": {
-          "up": {
-            "mean": 7.0703911781311035,
-            "rect": [
-              6,
-              43,
-              5,
-              179
-            ]
-          },
-          "down": {
-            "mean": 7.613407611846924,
-            "rect": [
-              211,
-              43,
-              5,
-              179
-            ]
-          },
-          "left": {
-            "mean": 7.598882675170898,
-            "rect": [
-              52,
-              6,
-              179,
-              5
-            ]
-          },
-          "right": {
-            "mean": 7.291620254516602,
-            "rect": [
-              52,
-              236,
-              179,
-              5
-            ]
-          }
-        }
-      },
-      "snr": {
-        "snr": 108.18,
-        "signal_mean": 511.19,
-        "noise_std_left": 3.0602,
-        "noise_std_right": 3.4961,
-        "noise_std_mean": 3.1423,
-        "method": "single_4bg",
-        "center_rc": [
-          141,
-          132
-        ],
-        "radius_px": 64,
-        "ufov_radius_px": 48,
-        "bg_rois": {}
-      },
-      "snru": {
-        "snru_percent": 97.42,
-        "snr_max": 93.86,
-        "snr_min": 89.15,
-        "noise_std": 3.7199,
-        "rois": [
-          {
-            "name": "center",
-            "center_rc": [
-              141,
-              132
-            ],
-            "mean_signal": 514.04,
-            "snr": 91.89
-          },
-          {
-            "name": "top",
-            "center_rc": [
-              103,
-              132
-            ],
-            "mean_signal": 498.67,
-            "snr": 89.15
-          },
-          {
-            "name": "bottom",
-            "center_rc": [
-              179,
-              132
-            ],
-            "mean_signal": 511.14,
-            "snr": 91.38
-          },
-          {
-            "name": "left",
-            "center_rc": [
-              141,
-              94
-            ],
-            "mean_signal": 505.56,
-            "snr": 90.38
-          },
-          {
-            "name": "right",
-            "center_rc": [
-              141,
-              170
-            ],
-            "mean_signal": 525.05,
-            "snr": 93.86
-          }
-        ],
-        "passed": true,
-        "limit": 90,
-        "center_rc": [
-          141,
-          132
-        ],
-        "radius_px": 64,
-        "roi_radius_px": 6
-      },
-      "t2": {
-        "t2_ms": 99.6,
-        "s1_mean": 1199.57,
-        "s2_mean": 510.95,
-        "te1_ms": 15,
-        "te2_ms": 100,
-        "ratio_s1_s2": 2.3477,
-        "center_rc": [
-          141,
-          131
-        ],
-        "radius_px": 80,
-        "roi_radius_px": 48,
-        "series1_description": "AX T2* GRE",
-        "series2_description": "T1 SE"
-      }
-    }
-  },
-  {
-    "date": "2026-06-17",
-    "results": {
-      "geometric": {
-        "diameter_horizontal_mm": 168.76,
-        "diameter_vertical_mm": 168.89,
-        "diameter_45_mm": 168.04,
-        "diameter_135_mm": 167.96,
-        "diameter_mean_mm": 168.41,
-        "diameter_max_mm": 168.89,
-        "diameter_min_mm": 167.96,
-        "distortion_percent": 0.556,
-        "max_error_mm": 0.47,
-        "nominal_diameter_mm": 168.4,
-        "passed": true,
-        "center_rc": [
-          141,
-          131
-        ],
-        "radius_px": 80,
-        "line_coords": {
-          "horizontal": {
-            "start": [
-              141,
-              51
-            ],
-            "end": [
-              141,
-              211
-            ]
-          },
-          "vertical": {
-            "start": [
-              61,
-              131
-            ],
-            "end": [
-              221,
-              131
-            ]
-          },
-          "oblique_45": {
-            "start": [
-              85.1,
-              75.1
-            ],
-            "end": [
-              197.6,
-              187.6
-            ]
-          },
-          "oblique_135": {
-            "start": [
-              84.4,
-              187.6
-            ],
-            "end": [
-              196.9,
-              75.1
-            ]
-          }
-        }
-      },
-      "piu": {
-        "piu_percent": 92.5,
-        "s_max": 1253.28,
-        "s_min": 1078.38,
-        "max_position_rc": [
-          148,
-          138
-        ],
-        "min_position_rc": [
-          88,
-          121
-        ],
-        "passed": true,
-        "limit": 87.5,
-        "center_rc": [
-          141,
-          131
-        ],
-        "radius_px": 80,
-        "ufov_radius_px": 60,
-        "mask_radius_px": 6
-      },
-      "psg": {
-        "psg_percent": 0.0333,
-        "signal_mean": 1172.24,
-        "s_right": 7.43,
-        "s_left": 6.57,
-        "s_up": 6.54,
-        "s_down": 6.67,
-        "passed": true,
-        "limit": 2.5,
-        "center_rc": [
-          141,
-          131
-        ],
-        "radius_px": 80,
-        "ufov_radius_px": 60,
-        "rois": {
-          "up": {
-            "mean": 6.544742584228516,
-            "rect": [
-              8,
-              57,
-              6,
-              149
-            ]
-          },
-          "down": {
-            "mean": 6.673377990722656,
-            "rect": [
-              229,
-              57,
-              6,
-              149
-            ]
-          },
-          "left": {
-            "mean": 6.572706699371338,
-            "rect": [
-              67,
-              8,
-              149,
-              6
-            ]
-          },
-          "right": {
-            "mean": 7.425055980682373,
-            "rect": [
-              67,
-              219,
-              149,
-              6
-            ]
-          }
-        }
-      },
-      "snr": {
-        "snr": 207.27,
-        "signal_mean": 1172.24,
-        "noise_std_left": 3.6252,
-        "noise_std_right": 3.897,
-        "noise_std_mean": 3.7611,
-        "method": "single_lr",
-        "center_rc": [
-          141,
-          131
-        ],
-        "radius_px": 80,
-        "ufov_radius_px": 60,
-        "bg_rois": {
-          "right": {
-            "std": 3.897,
-            "rect": [
-              126,
-              219,
-              30,
-              29
-            ]
-          },
-          "left": {
-            "std": 3.6252,
-            "rect": [
-              129,
-              8,
-              25,
-              35
-            ]
-          }
-        }
-      },
-      "snru": {
-        "snru_percent": 94.23,
-        "snr_max": 210.44,
-        "snr_min": 187.46,
-        "noise_std": 3.9459,
-        "rois": [
-          {
-            "name": "center",
-            "center_rc": [
-              141,
-              131
-            ],
-            "mean_signal": 1248.67,
-            "snr": 210.44
-          },
-          {
-            "name": "top",
-            "center_rc": [
-              93,
-              131
-            ],
-            "mean_signal": 1112.35,
-            "snr": 187.46
-          },
-          {
-            "name": "bottom",
-            "center_rc": [
-              189,
-              131
-            ],
-            "mean_signal": 1175.1,
-            "snr": 198.04
-          },
-          {
-            "name": "left",
-            "center_rc": [
-              141,
-              83
-            ],
-            "mean_signal": 1134.6,
-            "snr": 191.21
-          },
-          {
-            "name": "right",
-            "center_rc": [
-              141,
-              179
-            ],
-            "mean_signal": 1173.9,
-            "snr": 197.84
-          }
-        ],
-        "passed": true,
-        "limit": 90,
-        "center_rc": [
-          141,
-          131
-        ],
-        "radius_px": 80,
-        "roi_radius_px": 6
-      },
-      "t2": {
-        "t2_ms": 99.6,
-        "s1_mean": 1199.57,
-        "s2_mean": 510.95,
-        "te1_ms": 15,
-        "te2_ms": 100,
-        "ratio_s1_s2": 2.3477,
-        "center_rc": [
-          141,
-          131
-        ],
-        "radius_px": 80,
-        "roi_radius_px": 48,
-        "series1_description": "AX T2* GRE",
-        "series2_description": "T1 SE"
-      }
-    }
-  },
-  {
-    "date": "2026-06-17",
-    "results": {
-      "geometric": {
-        "diameter_horizontal_mm": 132.63,
-        "diameter_vertical_mm": 132.36,
-        "diameter_45_mm": 131.65,
-        "diameter_135_mm": 131.28,
-        "diameter_mean_mm": 131.98,
-        "diameter_max_mm": 132.63,
-        "diameter_min_mm": 131.28,
-        "distortion_percent": 1.019,
-        "max_error_mm": 0.67,
-        "nominal_diameter_mm": 132,
-        "passed": true,
-        "center_rc": [
-          141,
-          132
-        ],
-        "radius_px": 64,
-        "line_coords": {
-          "horizontal": {
-            "start": [
-              141,
-              69
-            ],
-            "end": [
-              141,
-              194
-            ]
-          },
-          "vertical": {
-            "start": [
-              78,
-              132
-            ],
-            "end": [
-              204,
-              132
-            ]
-          },
-          "oblique_45": {
-            "start": [
-              97.2,
-              88.2
-            ],
-            "end": [
-              184.8,
-              175.8
-            ]
-          },
-          "oblique_135": {
-            "start": [
-              97.2,
-              175.8
-            ],
-            "end": [
-              185.5,
-              87.5
-            ]
-          }
-        }
-      },
-      "piu": {
-        "piu_percent": 97.01,
-        "s_max": 525.36,
-        "s_min": 494.85,
-        "max_position_rc": [
-          149,
-          172
-        ],
-        "min_position_rc": [
-          99,
-          132
-        ],
-        "passed": true,
-        "limit": 87.5,
-        "center_rc": [
-          141,
-          132
-        ],
-        "radius_px": 64,
-        "ufov_radius_px": 48,
-        "mask_radius_px": 6
       },
       "psg": {
         "psg_percent": 0.1021,
@@ -953,7 +235,6 @@
         "roi_radius_px": 6
       },
       "t2": {
-        "t2_ms": 99.6,
         "s1_mean": 1199.57,
         "s2_mean": 510.95,
         "te1_ms": 15,
@@ -966,18 +247,1308 @@
         "radius_px": 80,
         "roi_radius_px": 48,
         "series1_description": "AX T2* GRE",
-        "series2_description": "T1 SE"
+        "series2_description": "T1 SE",
+        "invalidated_t2_ms": 99.6,
+        "error": "T2 invalidato: il calcolo richiede due sequenze Spin Echo con TE diversi"
       }
     },
-    "acquisition_id": "",
-    "saved_at": "",
-    "analysis_date": "",
-    "study_date": "",
-    "meta": {},
-    "control_info": {}
+    "raw_metrics": {
+      "geometric": {
+        "center_rc": [
+          141,
+          132
+        ],
+        "radius_px": 64,
+        "diameters_mm": {
+          "horizontal": 132.63,
+          "vertical": 132.36,
+          "oblique_45": 131.65,
+          "oblique_135": 131.28
+        },
+        "diameter_mean_mm": 131.98,
+        "diameter_max_mm": 132.63,
+        "diameter_min_mm": 131.28,
+        "nominal_diameter_mm": 132,
+        "max_error_mm": 0.67,
+        "line_coords": {
+          "horizontal": {
+            "start": [
+              141,
+              69
+            ],
+            "end": [
+              141,
+              194
+            ]
+          },
+          "vertical": {
+            "start": [
+              78,
+              132
+            ],
+            "end": [
+              204,
+              132
+            ]
+          },
+          "oblique_45": {
+            "start": [
+              97.2,
+              88.2
+            ],
+            "end": [
+              184.8,
+              175.8
+            ]
+          },
+          "oblique_135": {
+            "start": [
+              97.2,
+              175.8
+            ],
+            "end": [
+              185.5,
+              87.5
+            ]
+          }
+        }
+      },
+      "piu": {
+        "center_rc": [
+          141,
+          132
+        ],
+        "radius_px": 64,
+        "ufov_radius_px": 48,
+        "mask_radius_px": 6,
+        "s_max": 525.36,
+        "s_min": 494.85,
+        "max_position_rc": [
+          149,
+          172
+        ],
+        "min_position_rc": [
+          99,
+          132
+        ],
+        "field_T": 1.5
+      },
+      "psg": {
+        "center_rc": [
+          141,
+          132
+        ],
+        "radius_px": 64,
+        "ufov_radius_px": 48,
+        "background_means": {
+          "up": 7.07,
+          "down": 7.61,
+          "left": 7.6,
+          "right": 8.13
+        },
+        "signal_mean": 511.19,
+        "rois": {
+          "up": {
+            "mean": 7.0703911781311035,
+            "rect": [
+              6,
+              43,
+              5,
+              179
+            ]
+          },
+          "down": {
+            "mean": 7.613407611846924,
+            "rect": [
+              211,
+              43,
+              5,
+              179
+            ]
+          },
+          "left": {
+            "mean": 7.598882675170898,
+            "rect": [
+              52,
+              6,
+              179,
+              5
+            ]
+          },
+          "right": {
+            "mean": 8.128491401672363,
+            "rect": [
+              52,
+              202,
+              179,
+              5
+            ]
+          }
+        }
+      },
+      "snr": {
+        "center_rc": [
+          141,
+          132
+        ],
+        "radius_px": 64,
+        "ufov_radius_px": 48,
+        "signal_mean": 511.19,
+        "noise_std_left": 3.0602,
+        "noise_std_right": 3.4961,
+        "noise_std_mean": 3.2782,
+        "method": "single_lr",
+        "bg_rois": {
+          "right": {
+            "std": 3.4961,
+            "rect": [
+              132,
+              202,
+              18,
+              48
+            ]
+          },
+          "left": {
+            "std": 3.0602,
+            "rect": [
+              133,
+              6,
+              16,
+              56
+            ]
+          }
+        }
+      },
+      "snru": {
+        "center_rc": [
+          141,
+          132
+        ],
+        "radius_px": 64,
+        "roi_radius_px": 6,
+        "noise_std": 3.7199,
+        "snr_max": 93.86,
+        "snr_min": 89.15,
+        "rois": [
+          {
+            "name": "center",
+            "center_rc": [
+              141,
+              132
+            ],
+            "mean_signal": 514.04,
+            "snr": 91.89
+          },
+          {
+            "name": "top",
+            "center_rc": [
+              103,
+              132
+            ],
+            "mean_signal": 498.67,
+            "snr": 89.15
+          },
+          {
+            "name": "bottom",
+            "center_rc": [
+              179,
+              132
+            ],
+            "mean_signal": 511.14,
+            "snr": 91.38
+          },
+          {
+            "name": "left",
+            "center_rc": [
+              141,
+              94
+            ],
+            "mean_signal": 505.56,
+            "snr": 90.38
+          },
+          {
+            "name": "right",
+            "center_rc": [
+              141,
+              170
+            ],
+            "mean_signal": 525.05,
+            "snr": 93.86
+          }
+        ]
+      }
+    },
+    "acquisition_id": "C:\\Users\\cbracco\\Downloads\\controllorivoli|2026-06-19|2026-06-19|1.2.840.113619.2.410.4722639.4348421.14232.1713506889.406|0",
+    "saved_at": "2026-06-19T13:20:03.427Z",
+    "analysis_date": "2026-06-19",
+    "study_date": "2024-04-19",
+    "meta": {
+      "manufacturer": "GE MEDICAL SYSTEMS",
+      "model": "Optima MR450w",
+      "institution": "Osp RIVOLI ASL TO3",
+      "station": "GEMR450W",
+      "protocol": "T1 SE",
+      "tr_ms": 500,
+      "te_ms": 100,
+      "magnetic_field_T": 1.5,
+      "pixel_spacing_mm": 1.0547,
+      "slice_thickness_mm": 5,
+      "fov_mm": 270.0032,
+      "matrix_size": 256,
+      "study_date": "20240419",
+      "series_description": "T1 SE",
+      "n_slices": 1,
+      "n_averages": 2
+    },
+    "control_info": {
+      "data_controllo": "2026-06-19",
+      "tipo_controllo": "Costanza",
+      "presidio": "ASLTO3 Rivoli",
+      "sala": "RM",
+      "operatori": "Pinna, Cabras, BRacco",
+      "note": ""
+    },
+    "session_id": "C:\\Users\\cbracco\\Downloads\\controllorivoli|2026-06-19|2026-06-19",
+    "phantom_type": "sphere",
+    "selected_slice_idx": 0,
+    "input_dir": "C:\\Users\\cbracco\\Downloads\\controllorivoli",
+    "active_sequence_uid": "1.2.840.113619.2.410.4722639.4348421.14232.1713506889.406",
+    "session_date": "2026-06-19"
   },
   {
     "date": "2026-06-19",
+    "results": {
+      "geometric": {
+        "diameter_horizontal_mm": 131.74,
+        "diameter_vertical_mm": 131.96,
+        "diameter_45_mm": 131.15,
+        "diameter_135_mm": 130.48,
+        "diameter_mean_mm": 131.33,
+        "diameter_max_mm": 131.96,
+        "diameter_min_mm": 130.48,
+        "distortion_percent": 1.126,
+        "max_error_mm": 0.74,
+        "nominal_diameter_mm": 131.3,
+        "passed": true,
+        "center_rc": [
+          141,
+          132
+        ],
+        "radius_px": 64,
+        "line_coords": {
+          "horizontal": {
+            "start": [
+              141,
+              69
+            ],
+            "end": [
+              141,
+              194
+            ]
+          },
+          "vertical": {
+            "start": [
+              79,
+              132
+            ],
+            "end": [
+              204,
+              132
+            ]
+          },
+          "oblique_45": {
+            "start": [
+              97.2,
+              88.2
+            ],
+            "end": [
+              184.8,
+              175.8
+            ]
+          },
+          "oblique_135": {
+            "start": [
+              97.9,
+              175.1
+            ],
+            "end": [
+              184.8,
+              88.2
+            ]
+          }
+        }
+      },
+      "piu": {
+        "piu_percent": 91.48,
+        "s_max": 157.95,
+        "s_min": 133.13,
+        "max_position_rc": [
+          155,
+          136
+        ],
+        "min_position_rc": [
+          129,
+          92
+        ],
+        "passed": true,
+        "limit": 87.5,
+        "center_rc": [
+          141,
+          132
+        ],
+        "radius_px": 64,
+        "ufov_radius_px": 48,
+        "mask_radius_px": 6,
+        "field_T": 1.5
+      },
+      "psg": {
+        "psg_percent": 0.0156,
+        "signal_mean": 146.91,
+        "s_right": 7.04,
+        "s_left": 7.47,
+        "s_up": 7.14,
+        "s_down": 7.32,
+        "passed": true,
+        "limit": 2.5,
+        "center_rc": [
+          141,
+          132
+        ],
+        "radius_px": 64,
+        "ufov_radius_px": 48,
+        "rois": {
+          "up": {
+            "mean": 7.143016815185547,
+            "rect": [
+              6,
+              43,
+              5,
+              179
+            ]
+          },
+          "down": {
+            "mean": 7.32290506362915,
+            "rect": [
+              211,
+              43,
+              5,
+              179
+            ]
+          },
+          "left": {
+            "mean": 7.474860191345215,
+            "rect": [
+              52,
+              6,
+              179,
+              5
+            ]
+          },
+          "right": {
+            "mean": 7.036871433258057,
+            "rect": [
+              52,
+              202,
+              179,
+              5
+            ]
+          }
+        }
+      },
+      "snr": {
+        "snr": 31.36,
+        "signal_mean": 146.91,
+        "noise_std_left": 3.0788,
+        "noise_std_right": 3.1527,
+        "noise_std_mean": 3.1158,
+        "method": "single_lr",
+        "center_rc": [
+          141,
+          132
+        ],
+        "radius_px": 64,
+        "ufov_radius_px": 48,
+        "bg_rois": {
+          "right": {
+            "std": 3.1527,
+            "rect": [
+              132,
+              202,
+              18,
+              48
+            ]
+          },
+          "left": {
+            "std": 3.0788,
+            "rect": [
+              133,
+              6,
+              16,
+              56
+            ]
+          }
+        }
+      },
+      "snru": {
+        "snru_percent": 93.19,
+        "snr_max": 31.86,
+        "snr_min": 27.8,
+        "noise_std": 3.2799,
+        "rois": [
+          {
+            "name": "center",
+            "center_rc": [
+              141,
+              132
+            ],
+            "mean_signal": 157.14,
+            "snr": 31.86
+          },
+          {
+            "name": "top",
+            "center_rc": [
+              103,
+              132
+            ],
+            "mean_signal": 147.62,
+            "snr": 29.93
+          },
+          {
+            "name": "bottom",
+            "center_rc": [
+              179,
+              132
+            ],
+            "mean_signal": 154.2,
+            "snr": 31.26
+          },
+          {
+            "name": "left",
+            "center_rc": [
+              141,
+              94
+            ],
+            "mean_signal": 137.1,
+            "snr": 27.8
+          },
+          {
+            "name": "right",
+            "center_rc": [
+              141,
+              170
+            ],
+            "mean_signal": 142.03,
+            "snr": 28.8
+          }
+        ],
+        "passed": true,
+        "limit": 90,
+        "center_rc": [
+          141,
+          132
+        ],
+        "radius_px": 64,
+        "roi_radius_px": 6
+      },
+      "t2": {
+        "s1_mean": 1199.57,
+        "s2_mean": 510.95,
+        "te1_ms": 15,
+        "te2_ms": 100,
+        "ratio_s1_s2": 2.3477,
+        "center_rc": [
+          141,
+          131
+        ],
+        "radius_px": 80,
+        "roi_radius_px": 48,
+        "series1_description": "AX T2* GRE",
+        "series2_description": "T1 SE",
+        "invalidated_t2_ms": 99.6,
+        "error": "T2 invalidato: il calcolo richiede due sequenze Spin Echo con TE diversi"
+      }
+    },
+    "raw_metrics": {
+      "geometric": {
+        "center_rc": [
+          141,
+          132
+        ],
+        "radius_px": 64,
+        "diameters_mm": {
+          "horizontal": 131.74,
+          "vertical": 131.96,
+          "oblique_45": 131.15,
+          "oblique_135": 130.48
+        },
+        "diameter_mean_mm": 131.33,
+        "diameter_max_mm": 131.96,
+        "diameter_min_mm": 130.48,
+        "nominal_diameter_mm": 131.3,
+        "max_error_mm": 0.74,
+        "line_coords": {
+          "horizontal": {
+            "start": [
+              141,
+              69
+            ],
+            "end": [
+              141,
+              194
+            ]
+          },
+          "vertical": {
+            "start": [
+              79,
+              132
+            ],
+            "end": [
+              204,
+              132
+            ]
+          },
+          "oblique_45": {
+            "start": [
+              97.2,
+              88.2
+            ],
+            "end": [
+              184.8,
+              175.8
+            ]
+          },
+          "oblique_135": {
+            "start": [
+              97.9,
+              175.1
+            ],
+            "end": [
+              184.8,
+              88.2
+            ]
+          }
+        }
+      },
+      "piu": {
+        "center_rc": [
+          141,
+          132
+        ],
+        "radius_px": 64,
+        "ufov_radius_px": 48,
+        "mask_radius_px": 6,
+        "s_max": 157.95,
+        "s_min": 133.13,
+        "max_position_rc": [
+          155,
+          136
+        ],
+        "min_position_rc": [
+          129,
+          92
+        ],
+        "field_T": 1.5
+      },
+      "psg": {
+        "center_rc": [
+          141,
+          132
+        ],
+        "radius_px": 64,
+        "ufov_radius_px": 48,
+        "background_means": {
+          "up": 7.14,
+          "down": 7.32,
+          "left": 7.47,
+          "right": 7.04
+        },
+        "signal_mean": 146.91,
+        "rois": {
+          "up": {
+            "mean": 7.143016815185547,
+            "rect": [
+              6,
+              43,
+              5,
+              179
+            ]
+          },
+          "down": {
+            "mean": 7.32290506362915,
+            "rect": [
+              211,
+              43,
+              5,
+              179
+            ]
+          },
+          "left": {
+            "mean": 7.474860191345215,
+            "rect": [
+              52,
+              6,
+              179,
+              5
+            ]
+          },
+          "right": {
+            "mean": 7.036871433258057,
+            "rect": [
+              52,
+              202,
+              179,
+              5
+            ]
+          }
+        }
+      },
+      "snr": {
+        "center_rc": [
+          141,
+          132
+        ],
+        "radius_px": 64,
+        "ufov_radius_px": 48,
+        "signal_mean": 146.91,
+        "noise_std_left": 3.0788,
+        "noise_std_right": 3.1527,
+        "noise_std_mean": 3.1158,
+        "method": "single_lr",
+        "bg_rois": {
+          "right": {
+            "std": 3.1527,
+            "rect": [
+              132,
+              202,
+              18,
+              48
+            ]
+          },
+          "left": {
+            "std": 3.0788,
+            "rect": [
+              133,
+              6,
+              16,
+              56
+            ]
+          }
+        }
+      },
+      "snru": {
+        "center_rc": [
+          141,
+          132
+        ],
+        "radius_px": 64,
+        "roi_radius_px": 6,
+        "noise_std": 3.2799,
+        "snr_max": 31.86,
+        "snr_min": 27.8,
+        "rois": [
+          {
+            "name": "center",
+            "center_rc": [
+              141,
+              132
+            ],
+            "mean_signal": 157.14,
+            "snr": 31.86
+          },
+          {
+            "name": "top",
+            "center_rc": [
+              103,
+              132
+            ],
+            "mean_signal": 147.62,
+            "snr": 29.93
+          },
+          {
+            "name": "bottom",
+            "center_rc": [
+              179,
+              132
+            ],
+            "mean_signal": 154.2,
+            "snr": 31.26
+          },
+          {
+            "name": "left",
+            "center_rc": [
+              141,
+              94
+            ],
+            "mean_signal": 137.1,
+            "snr": 27.8
+          },
+          {
+            "name": "right",
+            "center_rc": [
+              141,
+              170
+            ],
+            "mean_signal": 142.03,
+            "snr": 28.8
+          }
+        ]
+      }
+    },
+    "acquisition_id": "C:\\Users\\cbracco\\Downloads\\controllorivoli|2026-06-19|2026-06-19|1.2.840.113619.2.410.4722639.4348421.14232.1713506889.405|0",
+    "saved_at": "2026-06-19T13:20:06.969Z",
+    "analysis_date": "2026-06-19",
+    "study_date": "2024-04-19",
+    "meta": {
+      "manufacturer": "GE MEDICAL SYSTEMS",
+      "model": "Optima MR450w",
+      "institution": "Osp RIVOLI ASL TO3",
+      "station": "GEMR450W",
+      "protocol": "T1 SE",
+      "tr_ms": 40,
+      "te_ms": 29,
+      "magnetic_field_T": 1.5,
+      "pixel_spacing_mm": 1.0547,
+      "slice_thickness_mm": 5,
+      "fov_mm": 270.0032,
+      "matrix_size": 256,
+      "study_date": "20240419",
+      "series_description": "T1 SE",
+      "n_slices": 1,
+      "n_averages": 2
+    },
+    "control_info": {
+      "data_controllo": "2026-06-19",
+      "tipo_controllo": "Costanza",
+      "presidio": "ASLTO3 Rivoli",
+      "sala": "RM",
+      "operatori": "Pinna, Cabras, BRacco",
+      "note": ""
+    },
+    "session_id": "C:\\Users\\cbracco\\Downloads\\controllorivoli|2026-06-19|2026-06-19",
+    "phantom_type": "sphere",
+    "selected_slice_idx": 0,
+    "input_dir": "C:\\Users\\cbracco\\Downloads\\controllorivoli",
+    "active_sequence_uid": "1.2.840.113619.2.410.4722639.4348421.14232.1713506889.405",
+    "session_date": "2026-06-19"
+  },
+  {
+    "date": "2026-06-19",
+    "results": {
+      "geometric": {
+        "diameter_horizontal_mm": 168.76,
+        "diameter_vertical_mm": 168.89,
+        "diameter_45_mm": 168.04,
+        "diameter_135_mm": 167.96,
+        "diameter_mean_mm": 168.41,
+        "diameter_max_mm": 168.89,
+        "diameter_min_mm": 167.96,
+        "distortion_percent": 0.556,
+        "max_error_mm": 0.47,
+        "nominal_diameter_mm": 168.4,
+        "passed": true,
+        "center_rc": [
+          141,
+          131
+        ],
+        "radius_px": 80,
+        "line_coords": {
+          "horizontal": {
+            "start": [
+              141,
+              51
+            ],
+            "end": [
+              141,
+              211
+            ]
+          },
+          "vertical": {
+            "start": [
+              61,
+              131
+            ],
+            "end": [
+              221,
+              131
+            ]
+          },
+          "oblique_45": {
+            "start": [
+              85.1,
+              75.1
+            ],
+            "end": [
+              197.6,
+              187.6
+            ]
+          },
+          "oblique_135": {
+            "start": [
+              84.4,
+              187.6
+            ],
+            "end": [
+              196.9,
+              75.1
+            ]
+          }
+        }
+      },
+      "piu": {
+        "piu_percent": 92.5,
+        "s_max": 1253.28,
+        "s_min": 1078.38,
+        "max_position_rc": [
+          148,
+          138
+        ],
+        "min_position_rc": [
+          88,
+          121
+        ],
+        "passed": true,
+        "limit": 87.5,
+        "center_rc": [
+          141,
+          131
+        ],
+        "radius_px": 80,
+        "ufov_radius_px": 60,
+        "mask_radius_px": 6,
+        "field_T": 1.5
+      },
+      "psg": {
+        "psg_percent": 0.0333,
+        "signal_mean": 1172.24,
+        "s_right": 7.43,
+        "s_left": 6.57,
+        "s_up": 6.54,
+        "s_down": 6.67,
+        "passed": true,
+        "limit": 2.5,
+        "center_rc": [
+          141,
+          131
+        ],
+        "radius_px": 80,
+        "ufov_radius_px": 60,
+        "rois": {
+          "up": {
+            "mean": 6.544742584228516,
+            "rect": [
+              8,
+              57,
+              6,
+              149
+            ]
+          },
+          "down": {
+            "mean": 6.673377990722656,
+            "rect": [
+              229,
+              57,
+              6,
+              149
+            ]
+          },
+          "left": {
+            "mean": 6.572706699371338,
+            "rect": [
+              67,
+              8,
+              149,
+              6
+            ]
+          },
+          "right": {
+            "mean": 7.425055980682373,
+            "rect": [
+              67,
+              219,
+              149,
+              6
+            ]
+          }
+        }
+      },
+      "snr": {
+        "snr": 207.27,
+        "signal_mean": 1172.24,
+        "noise_std_left": 3.6252,
+        "noise_std_right": 3.897,
+        "noise_std_mean": 3.7611,
+        "method": "single_lr",
+        "center_rc": [
+          141,
+          131
+        ],
+        "radius_px": 80,
+        "ufov_radius_px": 60,
+        "bg_rois": {
+          "right": {
+            "std": 3.897,
+            "rect": [
+              126,
+              219,
+              30,
+              29
+            ]
+          },
+          "left": {
+            "std": 3.6252,
+            "rect": [
+              129,
+              8,
+              25,
+              35
+            ]
+          }
+        }
+      },
+      "snru": {
+        "snru_percent": 94.23,
+        "snr_max": 210.44,
+        "snr_min": 187.46,
+        "noise_std": 3.9459,
+        "rois": [
+          {
+            "name": "center",
+            "center_rc": [
+              141,
+              131
+            ],
+            "mean_signal": 1248.67,
+            "snr": 210.44
+          },
+          {
+            "name": "top",
+            "center_rc": [
+              93,
+              131
+            ],
+            "mean_signal": 1112.35,
+            "snr": 187.46
+          },
+          {
+            "name": "bottom",
+            "center_rc": [
+              189,
+              131
+            ],
+            "mean_signal": 1175.1,
+            "snr": 198.04
+          },
+          {
+            "name": "left",
+            "center_rc": [
+              141,
+              83
+            ],
+            "mean_signal": 1134.6,
+            "snr": 191.21
+          },
+          {
+            "name": "right",
+            "center_rc": [
+              141,
+              179
+            ],
+            "mean_signal": 1173.9,
+            "snr": 197.84
+          }
+        ],
+        "passed": true,
+        "limit": 90,
+        "center_rc": [
+          141,
+          131
+        ],
+        "radius_px": 80,
+        "roi_radius_px": 6
+      },
+      "t2": {
+        "s1_mean": 1199.57,
+        "s2_mean": 510.95,
+        "te1_ms": 15,
+        "te2_ms": 100,
+        "ratio_s1_s2": 2.3477,
+        "center_rc": [
+          141,
+          131
+        ],
+        "radius_px": 80,
+        "roi_radius_px": 48,
+        "series1_description": "AX T2* GRE",
+        "series2_description": "T1 SE",
+        "invalidated_t2_ms": 99.6,
+        "error": "T2 invalidato: il calcolo richiede due sequenze Spin Echo con TE diversi"
+      }
+    },
+    "raw_metrics": {
+      "geometric": {
+        "center_rc": [
+          141,
+          131
+        ],
+        "radius_px": 80,
+        "diameters_mm": {
+          "horizontal": 168.76,
+          "vertical": 168.89,
+          "oblique_45": 168.04,
+          "oblique_135": 167.96
+        },
+        "diameter_mean_mm": 168.41,
+        "diameter_max_mm": 168.89,
+        "diameter_min_mm": 167.96,
+        "nominal_diameter_mm": 168.4,
+        "max_error_mm": 0.47,
+        "line_coords": {
+          "horizontal": {
+            "start": [
+              141,
+              51
+            ],
+            "end": [
+              141,
+              211
+            ]
+          },
+          "vertical": {
+            "start": [
+              61,
+              131
+            ],
+            "end": [
+              221,
+              131
+            ]
+          },
+          "oblique_45": {
+            "start": [
+              85.1,
+              75.1
+            ],
+            "end": [
+              197.6,
+              187.6
+            ]
+          },
+          "oblique_135": {
+            "start": [
+              84.4,
+              187.6
+            ],
+            "end": [
+              196.9,
+              75.1
+            ]
+          }
+        }
+      },
+      "piu": {
+        "center_rc": [
+          141,
+          131
+        ],
+        "radius_px": 80,
+        "ufov_radius_px": 60,
+        "mask_radius_px": 6,
+        "s_max": 1253.28,
+        "s_min": 1078.38,
+        "max_position_rc": [
+          148,
+          138
+        ],
+        "min_position_rc": [
+          88,
+          121
+        ],
+        "field_T": 1.5
+      },
+      "psg": {
+        "center_rc": [
+          141,
+          131
+        ],
+        "radius_px": 80,
+        "ufov_radius_px": 60,
+        "background_means": {
+          "up": 6.54,
+          "down": 6.67,
+          "left": 6.57,
+          "right": 7.43
+        },
+        "signal_mean": 1172.24,
+        "rois": {
+          "up": {
+            "mean": 6.544742584228516,
+            "rect": [
+              8,
+              57,
+              6,
+              149
+            ]
+          },
+          "down": {
+            "mean": 6.673377990722656,
+            "rect": [
+              229,
+              57,
+              6,
+              149
+            ]
+          },
+          "left": {
+            "mean": 6.572706699371338,
+            "rect": [
+              67,
+              8,
+              149,
+              6
+            ]
+          },
+          "right": {
+            "mean": 7.425055980682373,
+            "rect": [
+              67,
+              219,
+              149,
+              6
+            ]
+          }
+        }
+      },
+      "snr": {
+        "center_rc": [
+          141,
+          131
+        ],
+        "radius_px": 80,
+        "ufov_radius_px": 60,
+        "signal_mean": 1172.24,
+        "noise_std_left": 3.6252,
+        "noise_std_right": 3.897,
+        "noise_std_mean": 3.7611,
+        "method": "single_lr",
+        "bg_rois": {
+          "right": {
+            "std": 3.897,
+            "rect": [
+              126,
+              219,
+              30,
+              29
+            ]
+          },
+          "left": {
+            "std": 3.6252,
+            "rect": [
+              129,
+              8,
+              25,
+              35
+            ]
+          }
+        }
+      },
+      "snru": {
+        "center_rc": [
+          141,
+          131
+        ],
+        "radius_px": 80,
+        "roi_radius_px": 6,
+        "noise_std": 3.9459,
+        "snr_max": 210.44,
+        "snr_min": 187.46,
+        "rois": [
+          {
+            "name": "center",
+            "center_rc": [
+              141,
+              131
+            ],
+            "mean_signal": 1248.67,
+            "snr": 210.44
+          },
+          {
+            "name": "top",
+            "center_rc": [
+              93,
+              131
+            ],
+            "mean_signal": 1112.35,
+            "snr": 187.46
+          },
+          {
+            "name": "bottom",
+            "center_rc": [
+              189,
+              131
+            ],
+            "mean_signal": 1175.1,
+            "snr": 198.04
+          },
+          {
+            "name": "left",
+            "center_rc": [
+              141,
+              83
+            ],
+            "mean_signal": 1134.6,
+            "snr": 191.21
+          },
+          {
+            "name": "right",
+            "center_rc": [
+              141,
+              179
+            ],
+            "mean_signal": 1173.9,
+            "snr": 197.84
+          }
+        ]
+      }
+    },
+    "acquisition_id": "C:\\Users\\cbracco\\Downloads\\controllorivoli|2026-06-19|2026-06-19|1.2.840.113619.2.410.4722639.4348421.14232.1713506889.403|0",
+    "saved_at": "2026-06-19T13:20:06.997Z",
+    "analysis_date": "2026-06-19",
+    "study_date": "2024-04-19",
+    "meta": {
+      "manufacturer": "GE MEDICAL SYSTEMS",
+      "model": "Optima MR450w",
+      "institution": "Osp RIVOLI ASL TO3",
+      "station": "GEMR450W",
+      "protocol": "AX T2* GRE",
+      "tr_ms": 500,
+      "te_ms": 15,
+      "magnetic_field_T": 1.5,
+      "pixel_spacing_mm": 1.0547,
+      "slice_thickness_mm": 5,
+      "fov_mm": 270.0032,
+      "matrix_size": 256,
+      "study_date": "20240419",
+      "series_description": "AX T2* GRE",
+      "n_slices": 1,
+      "n_averages": 2
+    },
+    "control_info": {
+      "data_controllo": "2026-06-19",
+      "tipo_controllo": "Costanza",
+      "presidio": "ASLTO3 Rivoli",
+      "sala": "RM",
+      "operatori": "Pinna, Cabras, BRacco",
+      "note": ""
+    },
+    "session_id": "C:\\Users\\cbracco\\Downloads\\controllorivoli|2026-06-19|2026-06-19",
+    "phantom_type": "sphere",
+    "selected_slice_idx": 0,
+    "input_dir": "C:\\Users\\cbracco\\Downloads\\controllorivoli",
+    "active_sequence_uid": "1.2.840.113619.2.410.4722639.4348421.14232.1713506889.403",
+    "session_date": "2026-06-19"
+  },
+  {
+    "date": "2026-06-26",
     "results": {
       "geometric": {
         "diameter_horizontal_mm": 132.63,
@@ -1059,12 +1630,13 @@
         ],
         "radius_px": 64,
         "ufov_radius_px": 48,
-        "mask_radius_px": 6
+        "mask_radius_px": 6,
+        "field_T": 1.5
       },
       "psg": {
-        "psg_percent": 0.0779,
+        "psg_percent": 0.1021,
         "signal_mean": 511.19,
-        "s_right": 7.88,
+        "s_right": 8.13,
         "s_left": 7.6,
         "s_up": 7.07,
         "s_down": 7.61,
@@ -1105,10 +1677,10 @@
             ]
           },
           "right": {
-            "mean": 7.881564140319824,
+            "mean": 8.128491401672363,
             "rect": [
               52,
-              229,
+              202,
               179,
               5
             ]
@@ -1211,32 +1783,253 @@
         "roi_radius_px": 6
       },
       "t2": {
-        "t2_ms": 99.6,
-        "s1_mean": 1199.57,
-        "s2_mean": 510.95,
-        "te1_ms": 15,
+        "t2_ms": null,
+        "error": "TR incompatibili: la serie con TE=29 ms ha TR=40 ms, quella con TE=100 ms ha TR=500 ms. Il calcolo T2 richiede due serie Spin Echo con lo stesso TR e TE diversi.",
+        "te1_ms": 29,
         "te2_ms": 100,
-        "ratio_s1_s2": 2.3477,
-        "center_rc": [
-          141,
-          131
-        ],
-        "radius_px": 80,
-        "roi_radius_px": 48,
-        "series1_description": "AX T2* GRE",
+        "s1_mean": null,
+        "s2_mean": null,
+        "ratio_s1_s2": null,
+        "series1_description": "T1 SE",
         "series2_description": "T1 SE"
       }
     },
-    "acquisition_id": "C:\\Users\\cbracco\\Downloads\\controllorivoli|1.2.840.113619.2.410.4722639.4348421.14232.1713506889.406|20240419|T1 SE|AAALLASIA ENCEFALO1|100|500|0",
-    "saved_at": "2026-06-19T08:30:35.763Z",
-    "analysis_date": "2026-06-19",
+    "raw_metrics": {
+      "geometric": {
+        "center_rc": [
+          141,
+          132
+        ],
+        "radius_px": 64,
+        "diameters_mm": {
+          "horizontal": 132.63,
+          "vertical": 132.36,
+          "oblique_45": 131.65,
+          "oblique_135": 131.28
+        },
+        "diameter_mean_mm": 131.98,
+        "diameter_max_mm": 132.63,
+        "diameter_min_mm": 131.28,
+        "nominal_diameter_mm": 132,
+        "max_error_mm": 0.67,
+        "line_coords": {
+          "horizontal": {
+            "start": [
+              141,
+              69
+            ],
+            "end": [
+              141,
+              194
+            ]
+          },
+          "vertical": {
+            "start": [
+              78,
+              132
+            ],
+            "end": [
+              204,
+              132
+            ]
+          },
+          "oblique_45": {
+            "start": [
+              97.2,
+              88.2
+            ],
+            "end": [
+              184.8,
+              175.8
+            ]
+          },
+          "oblique_135": {
+            "start": [
+              97.2,
+              175.8
+            ],
+            "end": [
+              185.5,
+              87.5
+            ]
+          }
+        }
+      },
+      "piu": {
+        "center_rc": [
+          141,
+          132
+        ],
+        "radius_px": 64,
+        "ufov_radius_px": 48,
+        "mask_radius_px": 6,
+        "s_max": 525.36,
+        "s_min": 494.85,
+        "max_position_rc": [
+          149,
+          172
+        ],
+        "min_position_rc": [
+          99,
+          132
+        ],
+        "field_T": 1.5
+      },
+      "psg": {
+        "center_rc": [
+          141,
+          132
+        ],
+        "radius_px": 64,
+        "ufov_radius_px": 48,
+        "background_means": {
+          "up": 7.07,
+          "down": 7.61,
+          "left": 7.6,
+          "right": 8.13
+        },
+        "signal_mean": 511.19,
+        "rois": {
+          "up": {
+            "mean": 7.0703911781311035,
+            "rect": [
+              6,
+              43,
+              5,
+              179
+            ]
+          },
+          "down": {
+            "mean": 7.613407611846924,
+            "rect": [
+              211,
+              43,
+              5,
+              179
+            ]
+          },
+          "left": {
+            "mean": 7.598882675170898,
+            "rect": [
+              52,
+              6,
+              179,
+              5
+            ]
+          },
+          "right": {
+            "mean": 8.128491401672363,
+            "rect": [
+              52,
+              202,
+              179,
+              5
+            ]
+          }
+        }
+      },
+      "snr": {
+        "center_rc": [
+          141,
+          132
+        ],
+        "radius_px": 64,
+        "ufov_radius_px": 48,
+        "signal_mean": 511.19,
+        "noise_std_left": 3.0602,
+        "noise_std_right": 3.4961,
+        "noise_std_mean": 3.2782,
+        "method": "single_lr",
+        "bg_rois": {
+          "right": {
+            "std": 3.4961,
+            "rect": [
+              132,
+              202,
+              18,
+              48
+            ]
+          },
+          "left": {
+            "std": 3.0602,
+            "rect": [
+              133,
+              6,
+              16,
+              56
+            ]
+          }
+        }
+      },
+      "snru": {
+        "center_rc": [
+          141,
+          132
+        ],
+        "radius_px": 64,
+        "roi_radius_px": 6,
+        "noise_std": 3.7199,
+        "snr_max": 93.86,
+        "snr_min": 89.15,
+        "rois": [
+          {
+            "name": "center",
+            "center_rc": [
+              141,
+              132
+            ],
+            "mean_signal": 514.04,
+            "snr": 91.89
+          },
+          {
+            "name": "top",
+            "center_rc": [
+              103,
+              132
+            ],
+            "mean_signal": 498.67,
+            "snr": 89.15
+          },
+          {
+            "name": "bottom",
+            "center_rc": [
+              179,
+              132
+            ],
+            "mean_signal": 511.14,
+            "snr": 91.38
+          },
+          {
+            "name": "left",
+            "center_rc": [
+              141,
+              94
+            ],
+            "mean_signal": 505.56,
+            "snr": 90.38
+          },
+          {
+            "name": "right",
+            "center_rc": [
+              141,
+              170
+            ],
+            "mean_signal": 525.05,
+            "snr": 93.86
+          }
+        ]
+      }
+    },
+    "acquisition_id": "C:\\Users\\cbracco\\Downloads\\controllorivoli|2026-06-26|2026-06-26|1.2.840.113619.2.410.4722639.4348421.14232.1713506889.406|0",
+    "saved_at": "2026-06-26T10:52:53.638Z",
+    "analysis_date": "2026-06-26",
     "study_date": "2024-04-19",
     "meta": {
       "manufacturer": "GE MEDICAL SYSTEMS",
       "model": "Optima MR450w",
       "institution": "Osp RIVOLI ASL TO3",
       "station": "GEMR450W",
-      "protocol": "AAALLASIA ENCEFALO1",
+      "protocol": "T1 SE",
       "tr_ms": 500,
       "te_ms": 100,
       "magnetic_field_T": 1.5,
@@ -1250,16 +2043,1016 @@
       "n_averages": 2
     },
     "control_info": {
-      "data_controllo": "2026-06-19",
+      "data_controllo": "2026-06-26",
       "tipo_controllo": "Costanza",
-      "presidio": "Rivoli",
-      "sala": "Risonanza",
-      "operatori": "Boh",
+      "presidio": "",
+      "sala": "",
+      "operatori": "",
       "note": ""
     },
+    "session_id": "C:\\Users\\cbracco\\Downloads\\controllorivoli|2026-06-26|2026-06-26",
     "phantom_type": "sphere",
     "selected_slice_idx": 0,
     "input_dir": "C:\\Users\\cbracco\\Downloads\\controllorivoli",
-    "active_sequence_uid": "1.2.840.113619.2.410.4722639.4348421.14232.1713506889.406"
+    "active_sequence_uid": "1.2.840.113619.2.410.4722639.4348421.14232.1713506889.406",
+    "session_date": "2026-06-26"
+  },
+  {
+    "date": "2026-06-26",
+    "results": {
+      "geometric": {
+        "diameter_horizontal_mm": 131.74,
+        "diameter_vertical_mm": 131.96,
+        "diameter_45_mm": 131.15,
+        "diameter_135_mm": 130.48,
+        "diameter_mean_mm": 131.33,
+        "diameter_max_mm": 131.96,
+        "diameter_min_mm": 130.48,
+        "distortion_percent": 1.126,
+        "max_error_mm": 0.74,
+        "nominal_diameter_mm": 131.3,
+        "passed": true,
+        "center_rc": [
+          141,
+          132
+        ],
+        "radius_px": 64,
+        "line_coords": {
+          "horizontal": {
+            "start": [
+              141,
+              69
+            ],
+            "end": [
+              141,
+              194
+            ]
+          },
+          "vertical": {
+            "start": [
+              79,
+              132
+            ],
+            "end": [
+              204,
+              132
+            ]
+          },
+          "oblique_45": {
+            "start": [
+              97.2,
+              88.2
+            ],
+            "end": [
+              184.8,
+              175.8
+            ]
+          },
+          "oblique_135": {
+            "start": [
+              97.9,
+              175.1
+            ],
+            "end": [
+              184.8,
+              88.2
+            ]
+          }
+        }
+      },
+      "piu": {
+        "piu_percent": 91.48,
+        "s_max": 157.95,
+        "s_min": 133.13,
+        "max_position_rc": [
+          155,
+          136
+        ],
+        "min_position_rc": [
+          129,
+          92
+        ],
+        "passed": true,
+        "limit": 87.5,
+        "center_rc": [
+          141,
+          132
+        ],
+        "radius_px": 64,
+        "ufov_radius_px": 48,
+        "mask_radius_px": 6,
+        "field_T": 1.5
+      },
+      "psg": {
+        "psg_percent": 0.0156,
+        "signal_mean": 146.91,
+        "s_right": 7.04,
+        "s_left": 7.47,
+        "s_up": 7.14,
+        "s_down": 7.32,
+        "passed": true,
+        "limit": 2.5,
+        "center_rc": [
+          141,
+          132
+        ],
+        "radius_px": 64,
+        "ufov_radius_px": 48,
+        "rois": {
+          "up": {
+            "mean": 7.143016815185547,
+            "rect": [
+              6,
+              43,
+              5,
+              179
+            ]
+          },
+          "down": {
+            "mean": 7.32290506362915,
+            "rect": [
+              211,
+              43,
+              5,
+              179
+            ]
+          },
+          "left": {
+            "mean": 7.474860191345215,
+            "rect": [
+              52,
+              6,
+              179,
+              5
+            ]
+          },
+          "right": {
+            "mean": 7.036871433258057,
+            "rect": [
+              52,
+              202,
+              179,
+              5
+            ]
+          }
+        }
+      },
+      "snr": {
+        "snr": 31.36,
+        "signal_mean": 146.91,
+        "noise_std_left": 3.0788,
+        "noise_std_right": 3.1527,
+        "noise_std_mean": 3.1158,
+        "method": "single_lr",
+        "center_rc": [
+          141,
+          132
+        ],
+        "radius_px": 64,
+        "ufov_radius_px": 48,
+        "bg_rois": {
+          "right": {
+            "std": 3.1527,
+            "rect": [
+              132,
+              202,
+              18,
+              48
+            ]
+          },
+          "left": {
+            "std": 3.0788,
+            "rect": [
+              133,
+              6,
+              16,
+              56
+            ]
+          }
+        }
+      },
+      "snru": {
+        "snru_percent": 93.19,
+        "snr_max": 31.86,
+        "snr_min": 27.8,
+        "noise_std": 3.2799,
+        "rois": [
+          {
+            "name": "center",
+            "center_rc": [
+              141,
+              132
+            ],
+            "mean_signal": 157.14,
+            "snr": 31.86
+          },
+          {
+            "name": "top",
+            "center_rc": [
+              103,
+              132
+            ],
+            "mean_signal": 147.62,
+            "snr": 29.93
+          },
+          {
+            "name": "bottom",
+            "center_rc": [
+              179,
+              132
+            ],
+            "mean_signal": 154.2,
+            "snr": 31.26
+          },
+          {
+            "name": "left",
+            "center_rc": [
+              141,
+              94
+            ],
+            "mean_signal": 137.1,
+            "snr": 27.8
+          },
+          {
+            "name": "right",
+            "center_rc": [
+              141,
+              170
+            ],
+            "mean_signal": 142.03,
+            "snr": 28.8
+          }
+        ],
+        "passed": true,
+        "limit": 90,
+        "center_rc": [
+          141,
+          132
+        ],
+        "radius_px": 64,
+        "roi_radius_px": 6
+      }
+    },
+    "raw_metrics": {
+      "geometric": {
+        "center_rc": [
+          141,
+          132
+        ],
+        "radius_px": 64,
+        "diameters_mm": {
+          "horizontal": 131.74,
+          "vertical": 131.96,
+          "oblique_45": 131.15,
+          "oblique_135": 130.48
+        },
+        "diameter_mean_mm": 131.33,
+        "diameter_max_mm": 131.96,
+        "diameter_min_mm": 130.48,
+        "nominal_diameter_mm": 131.3,
+        "max_error_mm": 0.74,
+        "line_coords": {
+          "horizontal": {
+            "start": [
+              141,
+              69
+            ],
+            "end": [
+              141,
+              194
+            ]
+          },
+          "vertical": {
+            "start": [
+              79,
+              132
+            ],
+            "end": [
+              204,
+              132
+            ]
+          },
+          "oblique_45": {
+            "start": [
+              97.2,
+              88.2
+            ],
+            "end": [
+              184.8,
+              175.8
+            ]
+          },
+          "oblique_135": {
+            "start": [
+              97.9,
+              175.1
+            ],
+            "end": [
+              184.8,
+              88.2
+            ]
+          }
+        }
+      },
+      "piu": {
+        "center_rc": [
+          141,
+          132
+        ],
+        "radius_px": 64,
+        "ufov_radius_px": 48,
+        "mask_radius_px": 6,
+        "s_max": 157.95,
+        "s_min": 133.13,
+        "max_position_rc": [
+          155,
+          136
+        ],
+        "min_position_rc": [
+          129,
+          92
+        ],
+        "field_T": 1.5
+      },
+      "psg": {
+        "center_rc": [
+          141,
+          132
+        ],
+        "radius_px": 64,
+        "ufov_radius_px": 48,
+        "background_means": {
+          "up": 7.14,
+          "down": 7.32,
+          "left": 7.47,
+          "right": 7.04
+        },
+        "signal_mean": 146.91,
+        "rois": {
+          "up": {
+            "mean": 7.143016815185547,
+            "rect": [
+              6,
+              43,
+              5,
+              179
+            ]
+          },
+          "down": {
+            "mean": 7.32290506362915,
+            "rect": [
+              211,
+              43,
+              5,
+              179
+            ]
+          },
+          "left": {
+            "mean": 7.474860191345215,
+            "rect": [
+              52,
+              6,
+              179,
+              5
+            ]
+          },
+          "right": {
+            "mean": 7.036871433258057,
+            "rect": [
+              52,
+              202,
+              179,
+              5
+            ]
+          }
+        }
+      },
+      "snr": {
+        "center_rc": [
+          141,
+          132
+        ],
+        "radius_px": 64,
+        "ufov_radius_px": 48,
+        "signal_mean": 146.91,
+        "noise_std_left": 3.0788,
+        "noise_std_right": 3.1527,
+        "noise_std_mean": 3.1158,
+        "method": "single_lr",
+        "bg_rois": {
+          "right": {
+            "std": 3.1527,
+            "rect": [
+              132,
+              202,
+              18,
+              48
+            ]
+          },
+          "left": {
+            "std": 3.0788,
+            "rect": [
+              133,
+              6,
+              16,
+              56
+            ]
+          }
+        }
+      },
+      "snru": {
+        "center_rc": [
+          141,
+          132
+        ],
+        "radius_px": 64,
+        "roi_radius_px": 6,
+        "noise_std": 3.2799,
+        "snr_max": 31.86,
+        "snr_min": 27.8,
+        "rois": [
+          {
+            "name": "center",
+            "center_rc": [
+              141,
+              132
+            ],
+            "mean_signal": 157.14,
+            "snr": 31.86
+          },
+          {
+            "name": "top",
+            "center_rc": [
+              103,
+              132
+            ],
+            "mean_signal": 147.62,
+            "snr": 29.93
+          },
+          {
+            "name": "bottom",
+            "center_rc": [
+              179,
+              132
+            ],
+            "mean_signal": 154.2,
+            "snr": 31.26
+          },
+          {
+            "name": "left",
+            "center_rc": [
+              141,
+              94
+            ],
+            "mean_signal": 137.1,
+            "snr": 27.8
+          },
+          {
+            "name": "right",
+            "center_rc": [
+              141,
+              170
+            ],
+            "mean_signal": 142.03,
+            "snr": 28.8
+          }
+        ]
+      }
+    },
+    "acquisition_id": "C:\\Users\\cbracco\\Downloads\\controllorivoli|2026-06-26|2026-06-26|1.2.840.113619.2.410.4722639.4348421.14232.1713506889.405|0",
+    "saved_at": "2026-06-26T10:52:54.958Z",
+    "analysis_date": "2026-06-26",
+    "study_date": "2024-04-19",
+    "meta": {
+      "manufacturer": "GE MEDICAL SYSTEMS",
+      "model": "Optima MR450w",
+      "institution": "Osp RIVOLI ASL TO3",
+      "station": "GEMR450W",
+      "protocol": "T1 SE",
+      "tr_ms": 40,
+      "te_ms": 29,
+      "magnetic_field_T": 1.5,
+      "pixel_spacing_mm": 1.0547,
+      "slice_thickness_mm": 5,
+      "fov_mm": 270.0032,
+      "matrix_size": 256,
+      "study_date": "20240419",
+      "series_description": "T1 SE",
+      "n_slices": 1,
+      "n_averages": 2
+    },
+    "control_info": {
+      "data_controllo": "2026-06-26",
+      "tipo_controllo": "Costanza",
+      "presidio": "",
+      "sala": "",
+      "operatori": "",
+      "note": ""
+    },
+    "session_id": "C:\\Users\\cbracco\\Downloads\\controllorivoli|2026-06-26|2026-06-26",
+    "phantom_type": "sphere",
+    "selected_slice_idx": 0,
+    "input_dir": "C:\\Users\\cbracco\\Downloads\\controllorivoli",
+    "active_sequence_uid": "1.2.840.113619.2.410.4722639.4348421.14232.1713506889.405",
+    "session_date": "2026-06-26"
+  },
+  {
+    "date": "2026-06-26",
+    "results": {
+      "geometric": {
+        "diameter_horizontal_mm": 168.76,
+        "diameter_vertical_mm": 168.89,
+        "diameter_45_mm": 168.04,
+        "diameter_135_mm": 167.96,
+        "diameter_mean_mm": 168.41,
+        "diameter_max_mm": 168.89,
+        "diameter_min_mm": 167.96,
+        "distortion_percent": 0.556,
+        "max_error_mm": 0.47,
+        "nominal_diameter_mm": 168.4,
+        "passed": true,
+        "center_rc": [
+          141,
+          131
+        ],
+        "radius_px": 80,
+        "line_coords": {
+          "horizontal": {
+            "start": [
+              141,
+              51
+            ],
+            "end": [
+              141,
+              211
+            ]
+          },
+          "vertical": {
+            "start": [
+              61,
+              131
+            ],
+            "end": [
+              221,
+              131
+            ]
+          },
+          "oblique_45": {
+            "start": [
+              85.1,
+              75.1
+            ],
+            "end": [
+              197.6,
+              187.6
+            ]
+          },
+          "oblique_135": {
+            "start": [
+              84.4,
+              187.6
+            ],
+            "end": [
+              196.9,
+              75.1
+            ]
+          }
+        }
+      },
+      "piu": {
+        "piu_percent": 92.5,
+        "s_max": 1253.28,
+        "s_min": 1078.38,
+        "max_position_rc": [
+          148,
+          138
+        ],
+        "min_position_rc": [
+          88,
+          121
+        ],
+        "passed": true,
+        "limit": 87.5,
+        "center_rc": [
+          141,
+          131
+        ],
+        "radius_px": 80,
+        "ufov_radius_px": 60,
+        "mask_radius_px": 6,
+        "field_T": 1.5
+      },
+      "psg": {
+        "psg_percent": 0.0333,
+        "signal_mean": 1172.24,
+        "s_right": 7.43,
+        "s_left": 6.57,
+        "s_up": 6.54,
+        "s_down": 6.67,
+        "passed": true,
+        "limit": 2.5,
+        "center_rc": [
+          141,
+          131
+        ],
+        "radius_px": 80,
+        "ufov_radius_px": 60,
+        "rois": {
+          "up": {
+            "mean": 6.544742584228516,
+            "rect": [
+              8,
+              57,
+              6,
+              149
+            ]
+          },
+          "down": {
+            "mean": 6.673377990722656,
+            "rect": [
+              229,
+              57,
+              6,
+              149
+            ]
+          },
+          "left": {
+            "mean": 6.572706699371338,
+            "rect": [
+              67,
+              8,
+              149,
+              6
+            ]
+          },
+          "right": {
+            "mean": 7.425055980682373,
+            "rect": [
+              67,
+              219,
+              149,
+              6
+            ]
+          }
+        }
+      },
+      "snr": {
+        "snr": 207.27,
+        "signal_mean": 1172.24,
+        "noise_std_left": 3.6252,
+        "noise_std_right": 3.897,
+        "noise_std_mean": 3.7611,
+        "method": "single_lr",
+        "center_rc": [
+          141,
+          131
+        ],
+        "radius_px": 80,
+        "ufov_radius_px": 60,
+        "bg_rois": {
+          "right": {
+            "std": 3.897,
+            "rect": [
+              126,
+              219,
+              30,
+              29
+            ]
+          },
+          "left": {
+            "std": 3.6252,
+            "rect": [
+              129,
+              8,
+              25,
+              35
+            ]
+          }
+        }
+      },
+      "snru": {
+        "snru_percent": 94.23,
+        "snr_max": 210.44,
+        "snr_min": 187.46,
+        "noise_std": 3.9459,
+        "rois": [
+          {
+            "name": "center",
+            "center_rc": [
+              141,
+              131
+            ],
+            "mean_signal": 1248.67,
+            "snr": 210.44
+          },
+          {
+            "name": "top",
+            "center_rc": [
+              93,
+              131
+            ],
+            "mean_signal": 1112.35,
+            "snr": 187.46
+          },
+          {
+            "name": "bottom",
+            "center_rc": [
+              189,
+              131
+            ],
+            "mean_signal": 1175.1,
+            "snr": 198.04
+          },
+          {
+            "name": "left",
+            "center_rc": [
+              141,
+              83
+            ],
+            "mean_signal": 1134.6,
+            "snr": 191.21
+          },
+          {
+            "name": "right",
+            "center_rc": [
+              141,
+              179
+            ],
+            "mean_signal": 1173.9,
+            "snr": 197.84
+          }
+        ],
+        "passed": true,
+        "limit": 90,
+        "center_rc": [
+          141,
+          131
+        ],
+        "radius_px": 80,
+        "roi_radius_px": 6
+      }
+    },
+    "raw_metrics": {
+      "geometric": {
+        "center_rc": [
+          141,
+          131
+        ],
+        "radius_px": 80,
+        "diameters_mm": {
+          "horizontal": 168.76,
+          "vertical": 168.89,
+          "oblique_45": 168.04,
+          "oblique_135": 167.96
+        },
+        "diameter_mean_mm": 168.41,
+        "diameter_max_mm": 168.89,
+        "diameter_min_mm": 167.96,
+        "nominal_diameter_mm": 168.4,
+        "max_error_mm": 0.47,
+        "line_coords": {
+          "horizontal": {
+            "start": [
+              141,
+              51
+            ],
+            "end": [
+              141,
+              211
+            ]
+          },
+          "vertical": {
+            "start": [
+              61,
+              131
+            ],
+            "end": [
+              221,
+              131
+            ]
+          },
+          "oblique_45": {
+            "start": [
+              85.1,
+              75.1
+            ],
+            "end": [
+              197.6,
+              187.6
+            ]
+          },
+          "oblique_135": {
+            "start": [
+              84.4,
+              187.6
+            ],
+            "end": [
+              196.9,
+              75.1
+            ]
+          }
+        }
+      },
+      "piu": {
+        "center_rc": [
+          141,
+          131
+        ],
+        "radius_px": 80,
+        "ufov_radius_px": 60,
+        "mask_radius_px": 6,
+        "s_max": 1253.28,
+        "s_min": 1078.38,
+        "max_position_rc": [
+          148,
+          138
+        ],
+        "min_position_rc": [
+          88,
+          121
+        ],
+        "field_T": 1.5
+      },
+      "psg": {
+        "center_rc": [
+          141,
+          131
+        ],
+        "radius_px": 80,
+        "ufov_radius_px": 60,
+        "background_means": {
+          "up": 6.54,
+          "down": 6.67,
+          "left": 6.57,
+          "right": 7.43
+        },
+        "signal_mean": 1172.24,
+        "rois": {
+          "up": {
+            "mean": 6.544742584228516,
+            "rect": [
+              8,
+              57,
+              6,
+              149
+            ]
+          },
+          "down": {
+            "mean": 6.673377990722656,
+            "rect": [
+              229,
+              57,
+              6,
+              149
+            ]
+          },
+          "left": {
+            "mean": 6.572706699371338,
+            "rect": [
+              67,
+              8,
+              149,
+              6
+            ]
+          },
+          "right": {
+            "mean": 7.425055980682373,
+            "rect": [
+              67,
+              219,
+              149,
+              6
+            ]
+          }
+        }
+      },
+      "snr": {
+        "center_rc": [
+          141,
+          131
+        ],
+        "radius_px": 80,
+        "ufov_radius_px": 60,
+        "signal_mean": 1172.24,
+        "noise_std_left": 3.6252,
+        "noise_std_right": 3.897,
+        "noise_std_mean": 3.7611,
+        "method": "single_lr",
+        "bg_rois": {
+          "right": {
+            "std": 3.897,
+            "rect": [
+              126,
+              219,
+              30,
+              29
+            ]
+          },
+          "left": {
+            "std": 3.6252,
+            "rect": [
+              129,
+              8,
+              25,
+              35
+            ]
+          }
+        }
+      },
+      "snru": {
+        "center_rc": [
+          141,
+          131
+        ],
+        "radius_px": 80,
+        "roi_radius_px": 6,
+        "noise_std": 3.9459,
+        "snr_max": 210.44,
+        "snr_min": 187.46,
+        "rois": [
+          {
+            "name": "center",
+            "center_rc": [
+              141,
+              131
+            ],
+            "mean_signal": 1248.67,
+            "snr": 210.44
+          },
+          {
+            "name": "top",
+            "center_rc": [
+              93,
+              131
+            ],
+            "mean_signal": 1112.35,
+            "snr": 187.46
+          },
+          {
+            "name": "bottom",
+            "center_rc": [
+              189,
+              131
+            ],
+            "mean_signal": 1175.1,
+            "snr": 198.04
+          },
+          {
+            "name": "left",
+            "center_rc": [
+              141,
+              83
+            ],
+            "mean_signal": 1134.6,
+            "snr": 191.21
+          },
+          {
+            "name": "right",
+            "center_rc": [
+              141,
+              179
+            ],
+            "mean_signal": 1173.9,
+            "snr": 197.84
+          }
+        ]
+      }
+    },
+    "acquisition_id": "C:\\Users\\cbracco\\Downloads\\controllorivoli|2026-06-26|2026-06-26|1.2.840.113619.2.410.4722639.4348421.14232.1713506889.403|0",
+    "saved_at": "2026-06-26T10:52:54.983Z",
+    "analysis_date": "2026-06-26",
+    "study_date": "2024-04-19",
+    "meta": {
+      "manufacturer": "GE MEDICAL SYSTEMS",
+      "model": "Optima MR450w",
+      "institution": "Osp RIVOLI ASL TO3",
+      "station": "GEMR450W",
+      "protocol": "AX T2* GRE",
+      "tr_ms": 500,
+      "te_ms": 15,
+      "magnetic_field_T": 1.5,
+      "pixel_spacing_mm": 1.0547,
+      "slice_thickness_mm": 5,
+      "fov_mm": 270.0032,
+      "matrix_size": 256,
+      "study_date": "20240419",
+      "series_description": "AX T2* GRE",
+      "n_slices": 1,
+      "n_averages": 2
+    },
+    "control_info": {
+      "data_controllo": "2026-06-26",
+      "tipo_controllo": "Costanza",
+      "presidio": "",
+      "sala": "",
+      "operatori": "",
+      "note": ""
+    },
+    "session_id": "C:\\Users\\cbracco\\Downloads\\controllorivoli|2026-06-26|2026-06-26",
+    "phantom_type": "sphere",
+    "selected_slice_idx": 0,
+    "input_dir": "C:\\Users\\cbracco\\Downloads\\controllorivoli",
+    "active_sequence_uid": "1.2.840.113619.2.410.4722639.4348421.14232.1713506889.403",
+    "session_date": "2026-06-26"
   }
 ]
